@@ -1,4 +1,7 @@
 {
     "EXTENSION_API_KEY": "67a1f8504449b3a8ccd57ea4",
-    "EXTENSION_API_SECRET": ".QfojwvAmlL6r2e"
+    "EXTENSION_API_SECRET": ".QfojwvAmlL6r2e",
+    "DEVELOPMENT_COMPANY": 9675,
+    "CURRENT_ENV": "api.fynd.com",
+    "EXTENSION_BASE_URL": "https://on-particles-gasoline-knives.trycloudflare.com"
 }

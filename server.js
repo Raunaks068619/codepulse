@@ -34,7 +34,7 @@ const fdkExtension = setupFdk({
     access_mode: "online",
     webhook_config: {
         api_path: "/api/webhook-events",
-        notification_email: "useremail@example.com",
+        notification_email: "pritigediya@fynd-extenal.com",
         event_map: {
             "company/product/delete": {
                 "handler": (eventName) => {  console.log(eventName)},
