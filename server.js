@@ -7,9 +7,11 @@ const serveStatic = require("serve-static");
 const { readFileSync } = require('fs');
 const { setupFdk } = require("@gofynd/fdk-extension-javascript/express");
 const { SQLiteStorage } = require("@gofynd/fdk-extension-javascript/express/storage");
+const axios = require('axios');
 const sqliteInstance = new sqlite3.Database('session_storage.db');
 const productRouter = express.Router();
 
+console.log("first", process.env.EXTENSION_BASE_URL)
 
 const fdkExtension = setupFdk({
     api_key: process.env.EXTENSION_API_KEY,
@@ -79,20 +81,49 @@ app.post('/api/webhook-events', async function (req, res) {
 
 app.post('/api/auth/login', (req, res) => {
     console.log("coming")
-    const { FB_APP_ID } = req.body;
     // const redirectUri = 'https://abc.com/callback'
-    const redirectUri = 'https://slow-presenting-channels-linking.trycloudflare.com/company'
+    const redirectUri = `${process.env.EXTENSION_BASE_URL}/callback`
+    const { company_id } = eq.body
 
-    const states = { company_id: "9675" }
+    const states = { company_id }
 
     const scopes = ["instagram_basic"].join(',');
 
-    const authUrl = `https://www.facebook.com/v18.0/dialog/oauth?client_id=${FB_APP_ID}&redirect_uri=${redirectUri}&scope=${scopes}&response_type=code&state=${JSON.stringify(states)}`;
-    // res.redirect(authUrl);
+    const authUrl = `https://www.facebook.com/v18.0/dialog/oauth?client_id=${process.env.CLIENT_ID}&redirect_uri=${redirectUri}&scope=${scopes}&response_type=code&state=${JSON.stringify(states)}`;
     return res.status(200).json({ "success": true, authUrl });
 })
+app.get('/callback', async (req, res) => {
+    console.log("Handling OAuth Callback");
+    const { code } = req.query;
+    console.log(req.query);
 
-app.get('/business/instagram/account', async (req, res) => {
+
+    try {
+        const response = await axios.get('https://graph.facebook.com/v18.0/oauth/access_token', {
+            params: {
+                client_id: process.env.CLIENT_ID,
+                redirect_uri: `${process.env.EXTENSION_BASE_URL}/callback`, // Removed extra bracket
+                client_secret: process.env.CLIENT_SECRET,
+                code: code
+            }
+        });
+
+        if (response.data && response.data.access_token) {
+            const accessToken = response.data.access_token;
+            // Use the access token as needed
+            console.log('Access Token:', accessToken);
+            res.status(200).json({ success: true, access_token: accessToken });
+        } else {
+            console.error('No access token found in response:', response.data);
+            res.status(500).json({ success: false, message: 'No access token received' });
+        }
+    } catch (error) {
+        console.error('Error fetching access token:', error.message);
+        res.status(400).json({ error: error.message });
+    }
+});
+
+app.get('/api/business/instagram/account', async (req, res) => {
     try {
         const accessToken = req.query.access_token || process.env.FB_ACCESS_TOKEN;
         if (!accessToken) {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import "./style/home.css";
+// import "./style/home.css";
 import { useLocation, useParams, useSearchParams } from "react-router-dom";
 import { Button, CircularProgress } from "@mui/material";
 
@@ -8,6 +8,10 @@ const Login = () => {
     const [fbAccessToken, setFbAccessToken] = useState(null);
     const [loading, setLoading] = useState(false);
     const [instagramAccounts, setInstagramAccounts] = useState([]);
+
+    const { company_id } = useParams();
+
+
 
     const [searchParams] = useSearchParams()
     const paramValue = searchParams.get("state");
@@ -20,15 +24,15 @@ const Login = () => {
 
     const handlelogin = async () => {
         setLoading(true)
-        const res = await axios.post('/api/auth/login', { FB_APP_ID, FB_APP_SECRETE })
+        const res = await axios.post('/api/auth/login', { company_id })
         window.open(res.data.authUrl)
     }
 
     const fetchInstagramAccounts = async () => {
         try {
             setLoading(true);
-            const response = await axios.get(`/business/instagram/account?access_token=${fbAccessToken}`);
-            setInstagramAccounts(response.data.data);
+            const response = await axios.get(`/api/business/instagram/account?access_token=${fbAccessToken}`);
+            setInstagramAccounts(response.data.data[0]);
             setLoading(false);
         } catch (error) {
             console.error('Error fetching Instagram accounts:', error);

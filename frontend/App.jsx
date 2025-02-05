@@ -1,13 +1,37 @@
 import React from "react";
-import { Home } from "./pages/Home";
 import Login from "./pages/Login";
-import { useParams, useRoutes, useSearchParams } from "react-router-dom";
+import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
+
+const defaultTheme = createTheme({
+  palette: {
+    primary: {
+      main: '#1877F2', // Facebook blue
+    },
+    secondary: {
+      main: '#E4405F', // Instagram pink
+    },
+  },
+  typography: {
+    fontFamily: [
+      '-apple-system',
+      'BlinkMacSystemFont',
+      '"Segoe UI"',
+      'Roboto',
+      '"Helvetica Neue"',
+      'Arial',
+      'sans-serif',
+    ].join(','),
+  },
+});
+
 function App() {
-  
   return (
-    <div className="root">
-      <Login />
-    </div>
+    <ThemeProvider theme={defaultTheme}>
+      <CssBaseline />
+      <div className="root">
+        <Login />
+      </div>
+    </ThemeProvider>
   );
 }
 
