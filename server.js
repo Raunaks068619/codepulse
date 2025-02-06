@@ -9,6 +9,7 @@ const { setupFdk } = require("@gofynd/fdk-extension-javascript/express");
 const { SQLiteStorage } = require("@gofynd/fdk-extension-javascript/express/storage");
 const axios = require('axios');
 const SecretsModel = require('./models/secrets.model');
+const { isEmpty } = require('lodash');
 const sqliteInstance = new sqlite3.Database('session_storage.db');
 const productRouter = express.Router();
 
@@ -205,7 +206,11 @@ app.get('/api/secrets', async (req, res) => {
         const secrets = await SecretsModel.getByCompanyAndAppId({ companyId: company_id, applicationId: application_id })
 
         console.log({ secrets });
-        res.status(200).json({ success: true });
+        res.status(200).json({ 
+            isSellerAuthentiated: isEmpty(secrets) ? false : true, 
+            platformDomain: process.env.FP_PLATFORM_DOMAIN,
+            extensionId: process.env.EXTENSION_API_KEY
+        });
     } catch (error) {
         console.error('Error fetching secrets:', error);
         res.status(500).json({ success: false, message: 'Failed to fetch secrets', error });

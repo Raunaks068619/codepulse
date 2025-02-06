@@ -1,20 +1,58 @@
-import React, { useState } from 'react';
-import { TextField, Button } from '@mui/material';
-import './style/InstaAuthLogin.css';
+import React, { useState } from "react";
+import { TextField, Button } from "@mui/material";
+import "./style/InstaAuthLogin.css";
+import axios from "axios";
+import { useParams } from "react-router-dom";
+import { toast } from "sonner";
 
-const InstaAuthLogin = ({
-    moveToNextStep = () => {}
-}) => {
-  const [applicationId, setApplicationId] = useState('');
-  const [applicationSecret, setApplicationSecret] = useState('');
+const InstaAuthLogin = ({ moveToNextStep = () => {} }) => {
+  const [clientId, setClientId] = useState("657917179960900");
+  const [clientSecret, setClientSecret] = useState("208f341f4575f366d74a1d76002ddac4");
+  const [errors, setErrors] = useState({});
 
-  const handleConnect = () => {
-    console.log('Application ID:', applicationId);
-    console.log('Application Secret:', applicationSecret);
+  const { company_id, application_id } = useParams();
 
-    // Call API to store data in DB
- 
-    moveToNextStep();
+  const handleConnect = async () => {
+    try {
+      console.log("Application ID:", clientId);
+      console.log("Application Secret:", clientSecret);
+
+      const err = validateInput();
+      if (Object.keys(err).length > 0) {
+        setErrors(err);
+        return;
+      }
+
+      setErrors({});
+
+      // Call API to store data in DB
+      const res = await axios.post("/api/auth/login", {
+        company_id,
+        application_id,
+        client_id: clientId || "", 
+        client_secret: clientSecret || "", 
+      });
+
+      window.parent.location.href = res?.data?.authUrl;
+      // moveToNextStep();
+      // toast("login successful");
+    } catch (err) {
+      console.log(err);
+      toast(err.message || "Opps ! Error while login with meta")
+    }
+  };
+
+  const validateInput = () => {
+    const errors = {};
+    if (!clientId) {
+      errors.clientId = "Client ID is required";
+    }
+
+    if (!clientSecret) {
+      errors.clientSecret = "Client Secret is required";
+    }
+
+    return errors;
   };
 
   return (
@@ -30,11 +68,13 @@ const InstaAuthLogin = ({
         <form>
           <div className="form-group">
             <TextField
-              label="Application ID"
+              label="Client Id"
               variant="outlined"
               fullWidth
-              value={applicationId}
-              onChange={(e) => setApplicationId(e.target.value)}
+              value={clientId}
+              onChange={(e) => setClientId(e.target.value)}
+              error={!!errors?.clientId}
+              helperText={errors?.clientId}
             />
           </div>
           <div className="form-group">
@@ -42,8 +82,10 @@ const InstaAuthLogin = ({
               label="Application Secret"
               variant="outlined"
               fullWidth
-              value={applicationSecret}
-              onChange={(e) => setApplicationSecret(e.target.value)}
+              value={clientSecret}
+              onChange={(e) => setClientSecret(e.target.value)}
+              error={!!errors?.clientSecret}
+              helperText={errors?.clientSecret}
             />
           </div>
           <Button

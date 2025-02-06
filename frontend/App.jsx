@@ -1,14 +1,19 @@
 import React, { useEffect, useState } from "react";
-import { ThemeProvider, createTheme, CssBaseline } from "@mui/material";
+import {
+  ThemeProvider,
+  createTheme,
+  CssBaseline,
+  CircularProgress,
+} from "@mui/material";
 import CustomStepper from "./components/CustomStepper.jsx";
 import "./pages/style/app.css";
 import InstaAuthLogin from "./components/InstaAuthLogin";
 import ProductListing from "./components/ProductListing";
 import GenerateCaption from "./components/GenarteCaption";
-import PublishPost from "./components/PublishPost.jsx";
-import axios from "axios";
+import { Toaster } from "sonner";
 import { useParams } from "react-router-dom";
-import Login from "./pages/Login.jsx";
+import axios from "axios";
+import PublishPost from "./components/PublishPost";
 
 const defaultTheme = createTheme({
   palette: {
@@ -33,11 +38,46 @@ const defaultTheme = createTheme({
 });
 
 function App() {
-  const [activeStep, setActiveStep] = useState(3);
+  const [pageLoading, setPageLoading] = useState(true);
+  const [activeStep, setActiveStep] = useState(0);
   const [progressData, setProgressData] = useState({});
-  const [secrets, setSecrets] = useState(null)
-  const { company_id, application_id } = useParams
+  const [authData, setAuthData] = useState({
+    isSellerAuthentiated: false, // true means 
+    platformDomain: "https://platform.fynd.com",
+    extensionId: "67a36d8bd215866dcb2da3ef",
+  });
+  const { company_id, application_id } = useParams();
 
+  useEffect(() => {
+    fetchAuthData();
+  }, [company_id, application_id]);
+
+  const fetchAuthData = async () => {
+    try {
+      setPageLoading(true);
+      const res = await axios.get(`/api/secrets`, {
+        params: { company_id, application_id },
+      });
+      console.log({ res });
+
+      if (res.status === 200) {
+        if (res?.data?.isSellerAuthentiated) {
+          setActiveStep(1);
+        }
+
+        setAuthData({
+          ...(res?.data || {}),
+        });
+      }
+
+      setPageLoading(false);
+    } catch (err) {
+      console.log("Fetch Auth Data", {
+        err,
+      });
+      setPageLoading(false);
+    }
+  };
 
   const moveToNextStep = () => {
     setActiveStep(activeStep + 1);
@@ -54,21 +94,6 @@ function App() {
     });
     moveToNextStep();
   }
-
-  const getSecret = async () => {
-    const res = await axios.get(`/api/secrets`, { params: { company_id, application_id } })
-    if (res.status === 200) {
-      console.log({ res });
-      setSecrets(res.data.secrets)
-      return res.data
-    }
-  }
-
-  useEffect(() => {
-    if (!secrets) {
-      getSecret();
-    }
-  }, [company_id, application_id])
 
   const PrepareStepContent = () => {
     switch (activeStep) {
@@ -95,14 +120,21 @@ function App() {
   return (
     <ThemeProvider theme={defaultTheme}>
       <CssBaseline />
+      <Toaster position="top-right" />
       <div className="main-container">
-        <CustomStepper activeStep={activeStep} />
-        <div className="content-container">
-          <PrepareStepContent />
-        </div>
+        {pageLoading ? (
+          <div className="loader-container">
+            <CircularProgress />
+          </div>
+        ) : (
+          <>
+            <CustomStepper activeStep={activeStep} />
+            <div className="content-container">
+              <PrepareStepContent />
+            </div>
+          </>
+        )}
       </div>
-
-      {/* <Login /> */}
     </ThemeProvider>
   );
 }

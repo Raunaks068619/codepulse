@@ -1,6 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
 import App from "./App";
 import NotFound from "./pages/NotFound";
+import VerifyAuth from "./pages/VerifyAuth";
 
 const router = createBrowserRouter([
   {
@@ -9,7 +10,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/company/",
-    element: <App />,
+    element: <VerifyAuth />,
   },
   {
     path: "/company/:company_id/application/:application_id",
