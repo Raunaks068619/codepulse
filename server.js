@@ -206,8 +206,8 @@ app.get('/api/secrets', async (req, res) => {
         const secrets = await SecretsModel.getByCompanyAndAppId({ companyId: company_id, applicationId: application_id })
 
         console.log({ secrets });
-        res.status(200).json({ 
-            isSellerAuthentiated: isEmpty(secrets) ? false : true, 
+        res.status(200).json({
+            isSellerAuthentiated: isEmpty(secrets) ? false : true,
             platformDomain: process.env.FP_PLATFORM_DOMAIN,
             extensionId: process.env.EXTENSION_API_KEY
         });
@@ -252,7 +252,7 @@ app.get('/api/instagram/account', async (req, res) => {
             //     "has_profile_pic": true,
             //     "id": "17841472729451041"
             //   }
-              
+
         });
 
     } catch (error) {
@@ -275,13 +275,13 @@ app.post('/api/instagram/post', async (req, res) => {
             createAd = false,
             adConfig = {
                 cta_type: 'SHOP_NOW',
-                daily_budget: 1000, // in cents ($5)
-                campaign_name: 'Instagram Shop Campaign',
+                daily_budget: 8700, // in cents ($5)
+                campaign_name: 'FYND_AD_CAMPAIGN',
                 website_url: 'https://codepulse.fynd.io/product/m6qeb3cr_co-13438877',
                 targeting: {
                     age_min: 18,
                     age_max: 65,
-                    countries: ['US']
+                    countries: ['IN']
                 }
             }
         } = req.body;
@@ -350,6 +350,13 @@ app.post('/api/instagram/post', async (req, res) => {
         if (createAd && postId) {
             try {
                 // Create Campaign
+                console.log('Creating Campaign with params:', {
+                    name: adConfig.campaign_name,
+                    objective: 'OUTCOME_TRAFFIC',
+                    status: 'ACTIVE',
+                    special_ad_categories: '[]',
+                    access_token: accessToken
+                });
                 const campaignResponse = await axios.post(
                     `https://graph.facebook.com/v18.0/act_${adAccountId}/campaigns`,
                     null,
@@ -367,6 +374,24 @@ app.post('/api/instagram/post', async (req, res) => {
                 const campaignId = campaignResponse.data.id;
 
                 // Create Ad Set
+                console.log('Creating Ad Set with params:', {
+                    name: `${adConfig.campaign_name} Ad Set`,
+                    campaign_id: campaignId,
+                    daily_budget: adConfig.daily_budget,
+                    billing_event: 'IMPRESSIONS',
+                    optimization_goal: 'LINK_CLICKS',
+                    bid_strategy: 'LOWEST_COST_WITHOUT_CAP',
+                    targeting: JSON.stringify({
+                        age_min: adConfig.targeting.age_min,
+                        age_max: adConfig.targeting.age_max,
+                        genders: [1, 2],
+                        geo_locations: {
+                            countries: adConfig.targeting.countries
+                        }
+                    }),
+                    status: 'ACTIVE',
+                    access_token: accessToken
+                });
                 const adSetResponse = await axios.post(
                     `https://graph.facebook.com/v18.0/act_${adAccountId}/adsets`,
                     null,
@@ -395,6 +420,19 @@ app.post('/api/instagram/post', async (req, res) => {
                 const adSetId = adSetResponse.data.id;
 
                 // Create Ad Creative
+                console.log('Creating Ad Creative with params:', {
+                    object_story_id: postId,
+                    call_to_action_type: adConfig.cta_type,
+                    link_data: {
+                        call_to_action: {
+                            type: adConfig.cta_type,
+                            value: {
+                                link: adConfig.website_url
+                            }
+                        }
+                    },
+                    access_token: accessToken
+                });
                 const creativeResponse = await axios.post(
                     `https://graph.facebook.com/v18.0/act_${adAccountId}/adcreatives`,
                     null,
@@ -418,6 +456,13 @@ app.post('/api/instagram/post', async (req, res) => {
                 const creativeId = creativeResponse.data.id;
 
                 // Create Ad
+                console.log('Creating Ad with params:', {
+                    name: `${adConfig.campaign_name} Ad`,
+                    adset_id: adSetId,
+                    creative: { creative_id: creativeId },
+                    status: 'ACTIVE',
+                    access_token: accessToken
+                });
                 adResponse = await axios.post(
                     `https://graph.facebook.com/v18.0/act_${adAccountId}/ads`,
                     null,

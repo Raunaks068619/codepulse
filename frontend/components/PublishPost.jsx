@@ -14,11 +14,11 @@ const PublishPost = ({
   const handleSubmit = async () => {
     try {
       const response = await axios.post('/api/instagram/post', {
-        imageUrl: 'https://cdn.pixelbin.io/v2/potlee/original/public/banners/is_now_settle.png',
+        imageUrl: 'https://cdn.pixelbin.io/v2/potlee/t.resize(h:1080,w:1080)/1200px-Square_Inc_-_Square_Logo.jpeg',
         caption: "TESTT asdfasdfasdfasdfsdf TESTT",
         company_id,
         application_id,
-        createAd: true
+        createAd: false
       });
 
       if (response.data.success) {
