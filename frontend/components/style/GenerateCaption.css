@@ -1,11 +1,22 @@
 .generate-caption-conatiner {
+  width: 100%;
 }
 
 .navigation-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.caption-container {
+  width: 100%;
+  display: flex;
+}
+
+.caption-description-container,
+.instagram-post-previw-container {
+  width: 50%;
 }
 
 .back-icon-container {
@@ -16,6 +27,7 @@
   border-radius: 8px;
   border: 1px solid #f3f3f3;
   cursor: pointer;
+  width: fit-content;
 }
 
 .back-icon-container:hover {
