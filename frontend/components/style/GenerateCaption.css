@@ -1,0 +1,23 @@
+.generate-caption-conatiner {
+}
+
+.navigation-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.back-icon-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #f3f3f3;
+  cursor: pointer;
+}
+
+.back-icon-container:hover {
+  background-color: #f3f3f3;
+}

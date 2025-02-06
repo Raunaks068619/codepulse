@@ -1,0 +1,17 @@
+.main-container {
+    height: 100vh;
+    padding: 24px;
+    border-radius: 6px;
+    background-color: #F8F8F8;
+}
+
+.content-container {
+    margin-top: 24px;
+    padding: 24px;
+    border-radius: 6px;
+    background-color: white;
+    height: calc(100% - 100px);
+    overflow: auto;
+    display: flex;
+}
+
