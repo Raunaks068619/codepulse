@@ -1,11 +1,14 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ThemeProvider, createTheme, CssBaseline } from "@mui/material";
 import CustomStepper from "./components/CustomStepper.jsx";
 import "./pages/style/app.css";
 import InstaAuthLogin from "./components/InstaAuthLogin";
 import ProductListing from "./components/ProductListing";
 import GenerateCaption from "./components/GenarteCaption";
-import Login from "./pages/Login";
+import PublishPost from "./components/PublishPost.jsx";
+import axios from "axios";
+import { useParams } from "react-router-dom";
+import Login from "./pages/Login.jsx";
 
 const defaultTheme = createTheme({
   palette: {
@@ -30,8 +33,11 @@ const defaultTheme = createTheme({
 });
 
 function App() {
-  const [activeStep, setActiveStep] = useState(0);
+  const [activeStep, setActiveStep] = useState(3);
   const [progressData, setProgressData] = useState({});
+  const [secrets, setSecrets] = useState(null)
+  const { company_id, application_id } = useParams
+
 
   const moveToNextStep = () => {
     setActiveStep(activeStep + 1);
@@ -47,7 +53,22 @@ function App() {
       ...data,
     });
     moveToNextStep();
-  };
+  }
+
+  const getSecret = async () => {
+    const res = await axios.get(`/api/secrets`, { params: { company_id, application_id } })
+    if (res.status === 200) {
+      console.log({ res });
+      setSecrets(res.data.secrets)
+      return res.data
+    }
+  }
+
+  useEffect(() => {
+    if (!secrets) {
+      getSecret();
+    }
+  }, [company_id, application_id])
 
   const PrepareStepContent = () => {
     switch (activeStep) {
@@ -65,7 +86,7 @@ function App() {
           />
         );
       case 3:
-        return <div>Step 4</div>;
+        return <PublishPost moveToBackStep={moveToBackStep} moveToNextStep={moveToNextStep} handleSubmit={handleSubmitAndStoreData} />;
       default:
         return <div>Step 1</div>;
     }

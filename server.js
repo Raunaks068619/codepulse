@@ -80,6 +80,15 @@ app.post('/api/webhook-events', async function (req, res) {
     }
 })
 
+
+
+
+
+// // // // // // // // // 
+
+
+
+
 app.post('/api/auth/login', (req, res) => {
     console.log("coming")
     // const redirectUri = 'https://abc.com/callback'
@@ -88,7 +97,13 @@ app.post('/api/auth/login', (req, res) => {
 
     const states = { company_id, application_id, client_id, client_secret }
 
-    const scopes = ["instagram_basic"].join(',');
+    const scopes = [
+        "instagram_basic",
+        "ads_management",
+        "business_management",
+        "pages_read_engagement",
+        "pages_manage_ads"
+    ].join(',');
 
     const authUrl = `https://www.facebook.com/v18.0/dialog/oauth?client_id=${client_id}&redirect_uri=${redirectUri}&scope=${scopes}&response_type=code&state=${JSON.stringify(states)}`;
     return res.status(200).json({ "success": true, authUrl });
@@ -129,6 +144,15 @@ app.get('/api/instagram/auth', async (req, res) => {
         // Get Instagram accounts using the access token
         const accountsResponse = await fetch(`https://graph.facebook.com/v22.0/me/accounts?access_token=${accessToken}`);
         const accountsData = await accountsResponse.json();
+        console.log(JSON.stringify(accountsData));
+
+        // Fetch Ad Account ID
+        const adAccountResponse = await fetch(
+            `https://graph.facebook.com/v18.0/me/adaccounts?fields=account_id,name&access_token=${accessToken}`
+        );
+        const adAccountData = await adAccountResponse.json();
+
+
 
         // For each account, fetch the Instagram Business Account
         const accountsWithInstagram = await Promise.all(accountsData.data.map(async (account) => {
@@ -143,11 +167,12 @@ app.get('/api/instagram/auth', async (req, res) => {
         // Store in DB
         const instagramAccountData = accountsWithInstagram[0];
 
-
         const newSecret = await SecretsModel.create({
             companyId,
             applicationId,
             instagramBusinessId: instagramAccountData.instagram_business_account.id,
+            adAccountId: adAccountData.data[0].account_id,
+            adAccountName: adAccountData.data[0].name,
             accessToken,
             clientId,
             clientSecret
@@ -177,117 +202,263 @@ app.get('/api/secrets', async (req, res) => {
         const { company_id, application_id } = req.query;
         console.log('/api/secrets', { company_id, application_id });
 
-        const secrets = await SecretsModel.getByCompanyId({ companyId: company_id, applicationId: application_id })
+        const secrets = await SecretsModel.getByCompanyAndAppId({ companyId: company_id, applicationId: application_id })
 
         console.log({ secrets });
-        res.status(200).json({ success: true, secrets });
+        res.status(200).json({ success: true });
     } catch (error) {
         console.error('Error fetching secrets:', error);
         res.status(500).json({ success: false, message: 'Failed to fetch secrets', error });
     }
 });
-// app.post('/api/secrets', async (req, res) => {
-//     try {
-//         const { key, value } = req.body;
-//         await SecretsController.addNewSecret(key, value);
-//         res.status(200).json({ success: true, message: 'Secret added successfully' });
-//     } catch (error) {
-//         console.error('Error adding secret:', error);
-//         res.status(500).json({ success: false, message: 'Failed to add secret', error });
-//     }
-// });
 
-// app.get('/api/accesstoken', async (req, res) => {
-//     console.log("Handling OAuth Callback");
-//     const { code } = req.query;
-//     console.log(req.query);
+app.get('/api/instagram/account', async (req, res) => {
+    try {
+        const { company_id, application_id } = req.query;
 
-//     try {
-//         const response = await axios.get('https://graph.facebook.com/v18.0/oauth/access_token', {
-//             params: {
-//                 client_id: process.env.CLIENT_ID,
-//                 redirect_uri: `${process.env.EXTENSION_BASE_URL}/company`, // Removed extra bracket
-//                 client_secret: process.env.CLIENT_SECRET,
-//                 code: code
-//             }
-//         });
+        // Get credentials from secrets
+        const secrets = await SecretsModel.getByCompanyAndAppId({
+            companyId: company_id,
+            applicationId: application_id
+        });
 
-//         if (response.data && response.data.access_token) {
-//             const accessToken = response.data.access_token;
-//             // Use the access token as needed
-//             console.log('Access Token:', accessToken);
-//             res.status(200).json({ success: true, access_token: accessToken });
-//         } else {
-//             console.error('No access token found in response:', response.data);
-//             res.status(500).json({ success: false, message: 'No access token received' });
-//         }
-//     } catch (error) {
-//         console.error('Error fetching access token:', error.message);
-//         res.status(400).json({ error: error.message });
-//     }
-// });
-// app.post('/api/refresh-token', async (req, res) => {
-//     const { refresh_token } = req.body;
+        const { accessToken, instagramBusinessId } = secrets;
 
-//     if (!refresh_token) {
-//         return res.status(400).json({ error: 'Refresh token is required' });
-//     }
+        // Fetch Instagram Business Account details
+        const response = await axios.get(
+            `https://graph.facebook.com/v18.0/${instagramBusinessId}`,
+            {
+                params: {
+                    fields: 'username,profile_picture_url,name,biography,website,followers_count,media_count',
+                    access_token: accessToken
+                }
+            }
+        );
 
-//     try {
-//         const response = await axios.get('https://graph.facebook.com/v18.0/oauth/access_token', {
-//             params: {
-//                 grant_type: 'fb_exchange_token',
-//                 client_id: process.env.CLIENT_ID,
-//                 client_secret: process.env.CLIENT_SECRET,
-//                 fb_exchange_token: refresh_token
-//             }
-//         });
+        return res.status(200).json({
+            success: true,
+            data: response.data
+            // example respoonse
+            // {
+            //     "username": "codepulse_fynd",
+            //     "profile_picture_url": "https://scontent.fbom19-3.fna.fbcdn.net/v/t51.2885-15/476453097_1291836445269647_5423278969843365312_n.jpg?_nc_cat=100&ccb=1-7&_nc_sid=7d201b&_nc_ohc=WAQm8_AAFBcQ7kNvgGsHnmn&_nc_zt=23&_nc_ht=scontent.fbom19-3.fna&edm=AL-3X8kEAAAA&oh=00_AYC2-uVsrI-kAmc0oc7FmCpqbCuwgxsOhCobV_av14Q5RQ&oe=67AA4C3C",
+            //     "followers_count": 0,
+            //     "media_count": 9,
+            //     "has_profile_pic": true,
+            //     "id": "17841472729451041"
+            //   }
+              
+        });
 
-//         if (response.data && response.data.access_token) {
-//             const newAccessToken = response.data.access_token;
-//             console.log('New Access Token:', newAccessToken);
-//             res.status(200).json({ success: true, access_token: newAccessToken });
-//         } else {
-//             console.error('No access token found in response:', response.data);
-//             res.status(500).json({ success: false, message: 'No access token received' });
-//         }
-//     } catch (error) {
-//         console.error('Error refreshing access token:', error.message);
-//         res.status(400).json({ error: error.message });
-//     }
-// });
+    } catch (error) {
+        console.error('Error fetching Instagram account:', error.response?.data || error);
+        return res.status(500).json({
+            success: false,
+            message: 'Failed to fetch Instagram account details',
+            error: error.message
+        });
+    }
+});
 
-// app.get('/api/business/instagram/account', async (req, res) => {
-//     try {
-//         const accessToken = req.query.access_token || process.env.FB_ACCESS_TOKEN;
-//         if (!accessToken) {
-//             return res.status(400).json({ error: 'Access token is required' });
-//         }
+app.post('/api/instagram/post', async (req, res) => {
+    try {
+        const {
+            imageUrl,
+            caption,
+            company_id,
+            application_id,
+            createAd = false,
+            adConfig = {
+                cta_type: 'SHOP_NOW',
+                daily_budget: 1000, // in cents ($5)
+                campaign_name: 'Instagram Shop Campaign',
+                website_url: 'https://codepulse.fynd.io/product/m6qeb3cr_co-13438877',
+                targeting: {
+                    age_min: 18,
+                    age_max: 65,
+                    countries: ['US']
+                }
+            }
+        } = req.body;
 
-//         // Fetch the list of accounts
-//         const accountsResponse = await fetch(`https://graph.facebook.com/v22.0/me/accounts?access_token=${accessToken}`);
-//         const accountsData = await accountsResponse.json();
+        // Validate inputs
+        if (!imageUrl || !caption || !company_id) {
+            return res.status(400).json({
+                success: false,
+                message: 'Image URL, caption and company_id are required'
+            });
+        }
 
-//         if (!accountsResponse.ok) {
-//             return res.status(accountsResponse.status).json(accountsData);
-//         }
+        // Get credentials from secrets
+        const secrets = await SecretsModel.getByCompanyAndAppId({
+            companyId: company_id,
+            applicationId: application_id
+        });
 
-//         // For each account, fetch the Instagram Business Account
-//         const accountsWithInstagram = await Promise.all(accountsData.data.map(async (account) => {
-//             const instagramResponse = await fetch(`https://graph.facebook.com/v22.0/${account.id}?fields=instagram_business_account&access_token=${accessToken}`);
-//             const instagramData = await instagramResponse.json();
-//             return {
-//                 ...account,
-//                 instagram_business_account: instagramData.instagram_business_account || null
-//             };
-//         }));
+        const { accessToken, instagramBusinessId, adAccountId } = secrets;
 
-//         return res.status(200).json({ data: accountsWithInstagram });
-//     } catch (error) {
-//         console.error('Error fetching accounts:', error);
-//         return res.status(500).json({ error: 'Internal server error' });
-//     }
-// });
+        // Create media container
+        const containerResponse = await axios.post(
+            `https://graph.facebook.com/v18.0/${instagramBusinessId}/media`,
+            null,
+            {
+                params: {
+                    image_url: imageUrl,
+                    caption: caption,
+                    access_token: accessToken
+                }
+            }
+        );
+
+        if (!containerResponse.data.id) {
+            throw new Error('Failed to create media container');
+        }
+
+        // Publish the container
+        const publishResponse = await axios.post(
+            `https://graph.facebook.com/v18.0/${instagramBusinessId}/media_publish`,
+            null,
+            {
+                params: {
+                    creation_id: containerResponse.data.id,
+                    access_token: accessToken
+                }
+            }
+        );
+
+        const postId = publishResponse.data.id;
+
+        // Get post permalink
+        const mediaResponse = await axios.get(
+            `https://graph.facebook.com/v18.0/${postId}`,
+            {
+                params: {
+                    fields: 'permalink',
+                    access_token: accessToken
+                }
+            }
+        );
+
+        let adResponse = null;
+
+        // Create ad if requested
+        if (createAd && postId) {
+            try {
+                // Create Campaign
+                const campaignResponse = await axios.post(
+                    `https://graph.facebook.com/v18.0/act_${adAccountId}/campaigns`,
+                    null,
+                    {
+                        params: {
+                            name: adConfig.campaign_name,
+                            objective: 'OUTCOME_TRAFFIC',
+                            status: 'ACTIVE',
+                            special_ad_categories: '[]',
+                            access_token: accessToken
+                        }
+                    }
+                );
+
+                const campaignId = campaignResponse.data.id;
+
+                // Create Ad Set
+                const adSetResponse = await axios.post(
+                    `https://graph.facebook.com/v18.0/act_${adAccountId}/adsets`,
+                    null,
+                    {
+                        params: {
+                            name: `${adConfig.campaign_name} Ad Set`,
+                            campaign_id: campaignId,
+                            daily_budget: adConfig.daily_budget,
+                            billing_event: 'IMPRESSIONS',
+                            optimization_goal: 'LINK_CLICKS',
+                            bid_strategy: 'LOWEST_COST_WITHOUT_CAP',
+                            targeting: JSON.stringify({
+                                age_min: adConfig.targeting.age_min,
+                                age_max: adConfig.targeting.age_max,
+                                genders: [1, 2],
+                                geo_locations: {
+                                    countries: adConfig.targeting.countries
+                                }
+                            }),
+                            status: 'ACTIVE',
+                            access_token: accessToken
+                        }
+                    }
+                );
+
+                const adSetId = adSetResponse.data.id;
+
+                // Create Ad Creative
+                const creativeResponse = await axios.post(
+                    `https://graph.facebook.com/v18.0/act_${adAccountId}/adcreatives`,
+                    null,
+                    {
+                        params: {
+                            object_story_id: postId,
+                            call_to_action_type: adConfig.cta_type,
+                            link_data: {
+                                call_to_action: {
+                                    type: adConfig.cta_type,
+                                    value: {
+                                        link: adConfig.website_url
+                                    }
+                                }
+                            },
+                            access_token: accessToken
+                        }
+                    }
+                );
+
+                const creativeId = creativeResponse.data.id;
+
+                // Create Ad
+                adResponse = await axios.post(
+                    `https://graph.facebook.com/v18.0/act_${adAccountId}/ads`,
+                    null,
+                    {
+                        params: {
+                            name: `${adConfig.campaign_name} Ad`,
+                            adset_id: adSetId,
+                            creative: { creative_id: creativeId },
+                            status: 'ACTIVE',
+                            access_token: accessToken
+                        }
+                    }
+                );
+            } catch (adError) {
+                console.error('Ad creation failed:', adError.response?.data || adError);
+            }
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: 'Posted successfully to Instagram',
+            post_id: postId,
+            permalink: mediaResponse.data.permalink,
+            ad_data: adResponse ? {
+                campaign_id: campaignId,
+                ad_set_id: adSetId,
+                creative_id: creativeId,
+                ad_id: adResponse.data.id
+            } : null
+        });
+
+    } catch (error) {
+        console.error('Error:', error.response?.data || error);
+        return res.status(500).json({
+            success: false,
+            message: 'Operation failed',
+            error: error.message
+        });
+    }
+});
+
+
+
+
+
+// // // // // // // // // // 
 
 productRouter.get('/', async function view(req, res, next) {
     try {

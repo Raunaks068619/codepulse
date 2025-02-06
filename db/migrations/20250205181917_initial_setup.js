@@ -7,6 +7,8 @@ exports.up = function (knex) {
         table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));;
         table.string('companyId').notNullable();
         table.string('applicationId').notNullable();
+        table.string('adAccountId').unique().notNullable();
+        table.string('adAccountName').unique().notNullable();
         table.string('clientId').nullable();
         table.string('clientSecret').nullable();
         table.string('instagramBusinessId').notNullable();

@@ -43,7 +43,7 @@ class Secrets extends Model {
     static getById(id) {
         return this.query().where({ id });
     }
-    static getByCompanyId({ companyId, applicationId }) {
+    static getByCompanyAndAppId({ companyId, applicationId }) {
         return this.query().where({ companyId, applicationId }).first();
 
     }
