@@ -1,4 +1,4 @@
-import { Autocomplete, Button, Chip, TextField } from "@mui/material";
+import { Autocomplete, Box, Button, Chip, CircularProgress, List, ListItem, ListItemText, TextField } from "@mui/material";
 import InstaPost from "./InstaPost";
 import "./style/GenerateCaption.css";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -16,6 +16,10 @@ const GenerateCaption = ({
   const [productDescription, setProductDescription] = useState("");
   const [productCaption, setProductCaption] = useState("");
   const [productHashtag, setProductHashtag] = useState([defaultHashtags[13].title]);
+
+
+  console.log({ progressData });
+
 
   useEffect(() => {
     setProductDescription(progressData?.selectedProduct?.description);
@@ -37,6 +41,8 @@ const GenerateCaption = ({
       console.log({ caption: response.data.caption });
       console.log({ hashtag: JSON.parse(response.data.hashtags) });
 
+      setProductCaption(response.data.caption)
+      setProductHashtag(productHashtag, JSON.parse(response.data.hashtags));
 
     } catch (error) {
       console.error('Error fetching caption:', error);
@@ -44,7 +50,15 @@ const GenerateCaption = ({
   };
 
   useEffect(() => {
-    getCaption();
+    if (progressData?.productCaption) {
+      setProductCaption(progressData?.productCaption)
+    }
+    if (progressData?.productHashtag) {
+      setProductHashtag(progressData?.productHashtag);
+    }
+    else {
+      getCaption();
+    }
   }, [productDescription])
 
 
@@ -54,7 +68,12 @@ const GenerateCaption = ({
         <div className="caption-description-container">
           <div>
             <div className="title-container">
-              <span className="back-icon-container" onClick={moveToBackStep}>
+              <span className="back-icon-container" onClick={() => {
+                moveToBackStep({
+                  productCaption: null,
+                  productHashtag: null,
+                });
+              }}>
                 <ArrowBackIcon />
               </span>
               <div className="sales-channel-title">
@@ -62,17 +81,19 @@ const GenerateCaption = ({
               </div>
             </div>
             <div className="caption-description">
-              {progressData?.selectedProduct?.description && (
-                <div>
-                  <p className="desc-title">Product Description</p>
-                  <span
-                    className="description-value"
-                    dangerouslySetInnerHTML={{
-                      __html: progressData?.selectedProduct?.description,
-                    }}
-                  ></span>
-                </div>
-              )}
+              <Box sx={{ mb: 3 }}>
+                {progressData?.selectedProduct?.description && (
+                  <div>
+                    <p className="desc-title">Product Description</p>
+                    <span
+                      className="description-value"
+                      dangerouslySetInnerHTML={{
+                        __html: progressData?.selectedProduct?.description,
+                      }}
+                    ></span>
+                  </div>
+                )}
+              </Box>
 
               {/* <TextField
               id="post-caption"
@@ -84,50 +105,53 @@ const GenerateCaption = ({
               onChange={(e) => setProductDescription(e.target.value)}
             /> */}
 
-              <TextField
-                id="post-caption"
-                label="Post Caption"
-                multiline
-                rows={2}
-                defaultValue={progressData?.selectedProduct?.description || ""}
-                value={productCaption}
-                onChange={(e) => setProductCaption(e.target.value)}
-              />
+              {productCaption && productHashtag ? <>
+                <TextField
+                  id="post-caption"
+                  label="Post Caption"
+                  multiline
+                  maxRows={5}
+                  sx={{ mb: 2 }}
+                  defaultValue={progressData?.selectedProduct?.description || ""}
+                  value={productCaption}
+                  onChange={(e) => setProductCaption(e.target.value)}
+                />
 
-              <Autocomplete
-                multiple
-                id="tags-filled"
-                options={defaultHashtags.map((option) => option.title)}
-                defaultValue={productHashtag}
-                freeSolo
-                onChange={(event, newValues) => {
-                  console.log({
-                    newValues,
-                  });
-                  setProductHashtag(newValues);
-                }}
-                renderTags={(value, getTagProps) =>
-                  value.map((option, index) => {
-                    const { key, ...tagProps } = getTagProps({ index });
-                    return (
-                      <Chip
-                        variant="outlined"
-                        label={option}
-                        key={key}
-                        {...tagProps}
-                      />
-                    );
-                  })
-                }
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    variant="outlined"
-                    label="Post Hashtag"
-                    placeholder="Favorites"
-                  />
-                )}
-              />
+                <Autocomplete
+                  multiple
+                  id="tags-filled"
+                  options={defaultHashtags.map((option) => option.title)}
+                  defaultValue={productHashtag}
+                  freeSolo
+                  onChange={(event, newValues) => {
+                    console.log({
+                      newValues,
+                    });
+                    setProductHashtag(newValues);
+                  }}
+                  renderTags={(value, getTagProps) =>
+                    value.map((option, index) => {
+                      const { key, ...tagProps } = getTagProps({ index });
+                      return (
+                        <Chip
+                          variant="outlined"
+                          label={option}
+                          key={key}
+                          {...tagProps}
+                        />
+                      );
+                    })
+                  }
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      variant="outlined"
+                      label="Post Hashtag"
+                      placeholder="Favorites"
+                    />
+                  )}
+                /></> : <Box sx={{ height: "200px", display: "flex", alignItems: "center", justifyContent: 'center', width: '100%' }}>
+                <CircularProgress /></Box>}
             </div>
           </div>
           <div className="submit-container">
@@ -144,7 +168,12 @@ const GenerateCaption = ({
             </Button>
           </div>
         </div>
-        <div className="instagram-post-previw-container">
+        <div style={{
+          transform: 'scale(0.9)',
+          marginBottom: '-40px',
+          marginTop: '-20px',
+          marginLeft: "120px"
+        }} className="instagram-post-preview-container">
           <InstaPost
             imageUrl={progressData?.selectedImage?.url}
             profileImageUrl={authData?.instaAccountData?.profile_picture_url}
@@ -154,7 +183,7 @@ const GenerateCaption = ({
           />
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 

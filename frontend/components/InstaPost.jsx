@@ -1,6 +1,8 @@
 import React from 'react';
 import CollapsibleCaption from './CollapsibleCaption';
 import './style/InstaPost.css';
+import { Box, Typography } from '@mui/material';
+import { ArrowRight, ArrowRightAlt } from '@mui/icons-material';
 
 const InstaPost = ({
   profileImageUrl = "https://avatar.iran.liara.run/public/boy?username=Ash",
@@ -9,7 +11,8 @@ const InstaPost = ({
   location = "Location Here",
   likesCount = 12859,
   caption = "Enhance your Instagram with our UI Mockup ",
-  hashtag = "#instagram #templates #beautiful"
+  hashtag = "#instagram #templates #beautiful",
+  ctaButtonText = "Shop now"
 }) => {
   caption = caption || "Enhance your Instagram with our UI Mockup "
   hashtag = hashtag || "#instagram #templates #beautiful"
@@ -27,6 +30,10 @@ const InstaPost = ({
       <div className="insta-image">
         <img src={imageUrl} alt="Post" />
       </div>
+      <Box sx={{ display: "flex", justifyContent: "space-between", px: 1.5, py: 1, background: '#604cd4 ' }}>
+        <Typography sx={{ color: "white" }} variant='subtitle2'>{ctaButtonText}</Typography>
+        <ArrowRightAlt sx={{ fill: "white" }} />
+      </Box>
       <div className="insta-actions">
         <span className="like">❤️</span>
         <span className="comment">💬</span>

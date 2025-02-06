@@ -49,6 +49,10 @@ function App() {
   const { company_id, application_id } = useParams();
 
   useEffect(() => {
+    console.log("Progress data updated:", progressData);
+  }, [progressData]);
+
+  useEffect(() => {
     fetchInstaUserAccount();
     fetchAuthData();
   }, [company_id, application_id]);
@@ -100,7 +104,11 @@ function App() {
     setActiveStep(activeStep + 1);
   };
 
-  const moveToBackStep = () => {
+  const moveToBackStep = (data) => {
+    setProgressData({
+      ...progressData,
+      ...data
+    });
     setActiveStep(activeStep - 1);
   };
 

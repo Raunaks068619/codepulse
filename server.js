@@ -141,7 +141,7 @@ app.post('/api/generate-captions', async (req, res) => {
             model: "gpt-3.5-turbo",
             messages: [{
                 role: "system",
-                content: `You are a social media expert. Always respond with valid JSON in the format for this caption: ${caption}, strictly in this format which is an array, nothing other than this provided array of string only array of string must be there its is very very important: ["tag1", "tag2", "tag3"]`
+                content: `You are a social media expert. Always respond with valid JSON in the format for this caption: ${caption}, strictly in this format which is an array, nothing other than this provided array of string only array of string must be there its is very very important must be 3 there must be 3 strins in the array: ["tag1", "tag2", "tag3"]`
             },],
             max_tokens: 50,
         }, {
