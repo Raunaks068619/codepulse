@@ -1,4 +1,5 @@
 import React from 'react';
+import CollapsibleCaption from './CollapsibleCaption';
 import './style/InstaPost.css';
 
 const InstaPost = ({
@@ -10,6 +11,9 @@ const InstaPost = ({
   caption = "Enhance your Instagram with our UI Mockup ",
   hashtag = "#instagram #templates #beautiful"
 }) => {
+  caption = caption || "Enhance your Instagram with our UI Mockup "
+  hashtag = hashtag || "#instagram #templates #beautiful"
+
   return (
     <div className="insta-post">
       <div className="insta-header">
@@ -30,7 +34,9 @@ const InstaPost = ({
       </div>
       <div className="insta-likes">{likesCount.toString()} likes</div>
       <div className="insta-caption">
-        <span className="username">{accountName}</span> {caption}
+        <span className="username">{accountName}</span>
+        <CollapsibleCaption text={caption} />
+        {/* <CollapsibleCaption text={caption + " " + hashtag} /> */}
         <span className="hashtags">{hashtag}</span>
       </div>
     </div>

@@ -599,7 +599,22 @@ productRouter.get('/', async function view(req, res, next) {
         console.log("platformClient :: ", {
             platformClient
         });
+        
+        const applicationClient = req.platformClient?.application('67a34fa50b56330d2a3526d4');        
+        const response = await applicationClient.configuration.getApplication();
+        
+        const resp = await applicationClient.configuration.getDomains({
+            companyId: "9707",
+            applicationId: "67a34fa50b56330d2a3526d4",
+        })
 
+        const url = `https://${resp.domains[0]?.name}/order-tracking}`
+
+        console.log({
+            resp: JSON.stringify(resp),
+            url
+        });
+        
         const data = await platformClient.catalog.getProducts()
         return res.json(data);
     } catch (err) {

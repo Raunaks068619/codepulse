@@ -1,8 +1,9 @@
-import { Button, TextField } from "@mui/material";
+import { Autocomplete, Button, Chip, TextField } from "@mui/material";
 import InstaPost from "./InstaPost";
 import "./style/GenerateCaption.css";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useEffect, useState } from "react";
+import { defaultHashtags } from "../constants";
 import axios from "axios";
 
 const GenerateCaption = ({
@@ -14,7 +15,7 @@ const GenerateCaption = ({
 }) => {
   const [productDescription, setProductDescription] = useState("");
   const [productCaption, setProductCaption] = useState("");
-  const [productHashtag, setProductHashtag] = useState("");
+  const [productHashtag, setProductHashtag] = useState([defaultHashtags[13].title]);
 
   useEffect(() => {
     setProductDescription(progressData?.selectedProduct?.description);
@@ -51,28 +52,29 @@ const GenerateCaption = ({
     <div className="generate-caption-conatiner">
       <div className="caption-container">
         <div className="caption-description-container">
-          <div className="title-container">
-            <span className="back-icon-container" onClick={moveToBackStep}>
-              <ArrowBackIcon />
-            </span>
-            <div className="sales-channel-title">
-              Fill Details for Instagram Post
-            </div>
-          </div>
-          <div className="caption-description">
-            {progressData?.selectedProduct?.description && (
-              <div>
-                <p className="desc-title">Product Description</p>
-                <span
-                  className="description-value"
-                  dangerouslySetInnerHTML={{
-                    __html: progressData?.selectedProduct?.description,
-                  }}
-                ></span>
+          <div>
+            <div className="title-container">
+              <span className="back-icon-container" onClick={moveToBackStep}>
+                <ArrowBackIcon />
+              </span>
+              <div className="sales-channel-title">
+                Fill Details for Instagram Post
               </div>
-            )}
+            </div>
+            <div className="caption-description">
+              {progressData?.selectedProduct?.description && (
+                <div>
+                  <p className="desc-title">Product Description</p>
+                  <span
+                    className="description-value"
+                    dangerouslySetInnerHTML={{
+                      __html: progressData?.selectedProduct?.description,
+                    }}
+                  ></span>
+                </div>
+              )}
 
-            {/* <TextField
+              {/* <TextField
               id="post-caption"
               label="Post Description"
               multiline
@@ -82,37 +84,64 @@ const GenerateCaption = ({
               onChange={(e) => setProductDescription(e.target.value)}
             /> */}
 
-            <TextField
-              id="post-caption"
-              label="Post Caption"
-              multiline
-              rows={2}
-              defaultValue={progressData?.selectedProduct?.description || ""}
-              value={productCaption}
-              onChange={(e) => setProductCaption(e.target.value)}
-            />
-            <TextField
-              id="Post hashtags"
-              label="Post Hashtags"
-              multiline
-              rows={2}
-              defaultValue={progressData?.selectedProduct?.description || ""}
-              value={productHashtag}
-              onChange={(e) => setProductHashtag(e.target.value)}
-            />
-          </div>
-          <div>
-            <div className="submit-container">
-              <Button
-                variant="contained"
-                color="primary"
-                fullWidth
-                disabled={!productCaption || !productHashtag}
-                onClick={getCaption}
-              >
-                Next
-              </Button>
+              <TextField
+                id="post-caption"
+                label="Post Caption"
+                multiline
+                rows={2}
+                defaultValue={progressData?.selectedProduct?.description || ""}
+                value={productCaption}
+                onChange={(e) => setProductCaption(e.target.value)}
+              />
+
+              <Autocomplete
+                multiple
+                id="tags-filled"
+                options={defaultHashtags.map((option) => option.title)}
+                defaultValue={productHashtag}
+                freeSolo
+                onChange={(event, newValues) => {
+                  console.log({
+                    newValues,
+                  });
+                  setProductHashtag(newValues);
+                }}
+                renderTags={(value, getTagProps) =>
+                  value.map((option, index) => {
+                    const { key, ...tagProps } = getTagProps({ index });
+                    return (
+                      <Chip
+                        variant="outlined"
+                        label={option}
+                        key={key}
+                        {...tagProps}
+                      />
+                    );
+                  })
+                }
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    variant="outlined"
+                    label="Post Hashtag"
+                    placeholder="Favorites"
+                  />
+                )}
+              />
             </div>
+          </div>
+          <div className="submit-container">
+            <Button
+              variant="contained"
+              color="primary"
+              fullWidth
+              disabled={
+                !productCaption || !productHashtag || productHashtag.length <= 0
+              }
+              onClick={storeAndmoveToNextStep}
+            >
+              Next
+            </Button>
           </div>
         </div>
         <div className="instagram-post-previw-container">
@@ -120,6 +149,8 @@ const GenerateCaption = ({
             imageUrl={progressData?.selectedImage?.url}
             profileImageUrl={authData?.instaAccountData?.profile_picture_url}
             accountName={authData?.instaAccountData?.username}
+            caption={productCaption}
+            hashtag={productHashtag?.join(" ") || ""}
           />
         </div>
       </div>

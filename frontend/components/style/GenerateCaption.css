@@ -19,6 +19,12 @@
   width: 50%;
 }
 
+.caption-description-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
 .back-icon-container {
   display: flex;
   justify-content: center;
@@ -76,6 +82,6 @@ p {
 
 .description-value p {
   font-size: 12px !important;
-  max-height: 50px !important;
+  max-height: 80px !important;
   overflow: auto;
 }

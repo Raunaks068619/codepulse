@@ -81,7 +81,6 @@ function App() {
     }
   };
 
-
   const fetchInstaUserAccount = async () => {
     try {
       const accountRes = await axios.get(`/api/instagram/account`, {
@@ -90,13 +89,12 @@ function App() {
 
       setAuthData({
         ...authData,
-        instaAccountData: accountRes?.data?.data || {}
-      })
-      
+        instaAccountData: accountRes?.data?.data || {},
+      });
     } catch (err) {
       console.log("fetchInstaUserAccount :: ", err);
     }
-  }
+  };
 
   const moveToNextStep = () => {
     setActiveStep(activeStep + 1);
@@ -123,7 +121,7 @@ function App() {
       case 2:
         return (
           <GenerateCaption
-          authData={authData}
+            authData={authData}
             progressData={progressData}
             moveToBackStep={moveToBackStep}
             moveToNextStep={moveToNextStep}
@@ -133,13 +131,15 @@ function App() {
       case 3:
         return (
           <PublishPost
+            authData={authData}
+            progressData={progressData}
             moveToBackStep={moveToBackStep}
             moveToNextStep={moveToNextStep}
             handleSubmit={handleSubmitAndStoreData}
           />
         );
       default:
-        return <div>Step 1</div>;
+        return <InstaAuthLogin moveToNextStep={moveToNextStep} />;
     }
   };
 

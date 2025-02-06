@@ -79,7 +79,7 @@ const InstaAuthLogin = ({ moveToNextStep = () => {} }) => {
           </div>
           <div className="form-group">
             <TextField
-              label="Application Secret"
+              label="Client Secret"
               variant="outlined"
               fullWidth
               value={clientSecret}
