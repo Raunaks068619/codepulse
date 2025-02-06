@@ -1,0 +1,19 @@
+.campaign-details-conatainer {
+    margin-top: 12px;
+    margin-bottom: 12px;
+    display: flex;
+    flex-direction: column;
+}
+
+.target-audiance-container {
+    margin-top: 12px;
+    margin-bottom: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.age-conatiner {
+    display: flex;
+    gap: 12px;
+}
