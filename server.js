@@ -110,6 +110,62 @@ app.post('/api/auth/login', (req, res) => {
     return res.status(200).json({ "success": true, authUrl });
 })
 
+
+app.post('/api/generate-captions', async (req, res) => {
+    console.log(req.body);
+
+    const { description } = req.body
+    const promptArray = [
+        "Write a catchy and engaging Instagram caption announcing a limited-time storefront sale. Make it exciting and include a strong call to action.",
+        "Generate a playful and witty Instagram caption for a storefront sale that encourages followers to visit and shop before the deals run out.",
+        "Create a short and punchy Instagram caption for a storefront sale, incorporating urgency and exclusivity to drive customers to take action.",
+        "Write a warm and inviting Instagram caption for a storefront sale that highlights community, great deals, and the joy of shopping in person.",
+        "Generate an Instagram caption for a storefront sale that uses emojis and trendy language to appeal to a younger audience and drive engagement.",
+    ];
+    const choice = Math.floor(Math.random() * 5);
+    try {
+        const captionResponse = await axios.post("https://api.openai.com/v1/chat/completions", {
+            model: "gpt-3.5-turbo",
+            messages: [{ role: "user", content: `create caption from this product description html ${description}, muts be a normal string  no "" or '' is needed i need only text` }],
+            max_tokens: 50,
+        }, {
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+            },
+        });
+
+        const caption = captionResponse.data.choices[0].message.content;
+
+        const hashtagResponse = await axios.post("https://api.openai.com/v1/chat/completions", {
+            model: "gpt-3.5-turbo",
+            messages: [{
+                role: "system",
+                content: `You are a social media expert. Always respond with valid JSON in the format for this caption: ${caption}, strictly in this format which is an array, nothing other than this provided array of string only array of string must be there its is very very important: ["tag1", "tag2", "tag3"]`
+            },],
+            max_tokens: 50,
+        }, {
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+            },
+        });
+
+
+        const hashtags = hashtagResponse.data.choices[0].message.content;
+        return res.status(200).send({ caption, hashtags });
+
+        // const data = await caption.json();
+        // return data.choices[0].message.content;
+        // return res.status(200).send({ caption: data.choices[0].message.content });
+
+    } catch (error) {
+        console.log({ error });
+    }
+});
+
+
+
 app.get('/api/instagram/auth', async (req, res) => {
     try {
         console.log({ query: req.query });
@@ -499,7 +555,7 @@ app.get('/api/product/:product_slug', async (req, res) => {
     try {
         const { product_slug } = req.params
         const { company_id, application_id } = req.query;
-        
+
         // GET /service/platform/configuration/v1.0/company/{company_id}/application
 
         // Fetch Instagram Business Account details
@@ -530,6 +586,8 @@ app.get('/api/product/:product_slug', async (req, res) => {
 
 
 
+
+
 // // // // // // // // // // 
 
 productRouter.get('/', async function view(req, res, next) {
@@ -541,7 +599,7 @@ productRouter.get('/', async function view(req, res, next) {
         console.log("platformClient :: ", {
             platformClient
         });
-        
+
         const data = await platformClient.catalog.getProducts()
         return res.json(data);
     } catch (err) {
@@ -558,35 +616,19 @@ productRouter.get('/application/:application_id', async function view(req, res, 
         const { application_id } = req.params;
         const data = await platformClient.application(application_id).catalog.getAppProducts()
         const accData = await platformClient.application(application_id);
-        
+
         console.log({
             accData
         });
-        
+
         // Assuming data contains product descriptions
-        const descriptions = data.map(product => product.description);
-        const captions = await Promise.all(descriptions.map(desc => generateCaption(desc)));
-        
-        
+
         return res.json(data);
     } catch (err) {
         next(err);
     }
 });
 
-productRouter.post('/generate-captions', async function(req, res, next) {
-    try {
-        const { description } = req.body;
-        if (!description) {
-            return res.status(400).json({ error: 'Product description is required' });
-        }
-
-        // const captions = await generateCaptions(description);
-        return res.json({ data: {} });
-    } catch (err) {
-        next(err);
-    }
-});
 
 // FDK extension api route which has auth middleware and FDK client instance attached to it.
 platformApiRoutes.use('/products', productRouter);

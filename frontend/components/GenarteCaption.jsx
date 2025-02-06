@@ -3,13 +3,14 @@ import InstaPost from "./InstaPost";
 import "./style/GenerateCaption.css";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useEffect, useState } from "react";
+import axios from "axios";
 
 const GenerateCaption = ({
   authData,
   progressData,
-  handleSubmit = () => {},
-  moveToNextStep = () => {},
-  moveToBackStep = () => {},
+  handleSubmit = () => { },
+  moveToNextStep = () => { },
+  moveToBackStep = () => { },
 }) => {
   const [productDescription, setProductDescription] = useState("");
   const [productCaption, setProductCaption] = useState("");
@@ -26,6 +27,25 @@ const GenerateCaption = ({
       productHashtag,
     });
   };
+
+
+  const getCaption = async () => {
+    try {
+      const response = await axios.post('/api/generate-captions', { description: productDescription });
+
+      console.log({ caption: response.data.caption });
+      console.log({ hashtag: JSON.parse(response.data.hashtags) });
+
+
+    } catch (error) {
+      console.error('Error fetching caption:', error);
+    }
+  };
+
+  useEffect(() => {
+    getCaption();
+  }, [productDescription])
+
 
   return (
     <div className="generate-caption-conatiner">
@@ -88,7 +108,7 @@ const GenerateCaption = ({
                 color="primary"
                 fullWidth
                 disabled={!productCaption || !productHashtag}
-                onClick={storeAndmoveToNextStep}
+                onClick={getCaption}
               >
                 Next
               </Button>
