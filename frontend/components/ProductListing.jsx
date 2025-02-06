@@ -68,10 +68,6 @@ const ProductListing = ({ handleSubmit = () => {} }) => {
         }
       );
 
-      console.log({
-        data,
-      });
-
       setProductList(data.items);
     } catch (e) {
       console.error("Error fetching application products:", e);
@@ -179,6 +175,14 @@ const ProductListing = ({ handleSubmit = () => {} }) => {
                         data-testid={`product-category-slug-${product.id}`}
                       >
                         Category: <span>{product.category_slug}</span>
+                      </div>
+                    )}
+                    {product?.price?.selling && (
+                      <div
+                        className="product-price"
+                        data-testid={`product-price-slug-${product.id}`}
+                      >
+                        Price: <span>{product?.price?.selling?.currency_symbol} {product?.price?.selling?.max}</span>
                       </div>
                     )}
                   </div>

@@ -7,8 +7,8 @@ const InstaPost = ({
   accountName = "Your_Account",
   location = "Location Here",
   likesCount = 12859,
-  caption = "Enhance your Instagram with our UI Mockup Download for instagram creativity.",
-  hashtag = "#instagram #templates #beautiful #funny #dailypost"
+  caption = "Enhance your Instagram with our UI Mockup ",
+  hashtag = "#instagram #templates #beautiful"
 }) => {
   return (
     <div className="insta-post">

@@ -29,6 +29,7 @@
     "knex": "^3.1.0",
     "lodash": "^4.17.21",
     "objection": "^3.1.5",
+    "openai": "^4.83.0",
     "pg": "^8.13.1",
     "prop-types": "^15.8.1",
     "serve-static": "^1.15.0",

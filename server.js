@@ -243,16 +243,6 @@ app.get('/api/instagram/account', async (req, res) => {
         return res.status(200).json({
             success: true,
             data: response.data
-            // example respoonse
-            // {
-            //     "username": "codepulse_fynd",
-            //     "profile_picture_url": "https://scontent.fbom19-3.fna.fbcdn.net/v/t51.2885-15/476453097_1291836445269647_5423278969843365312_n.jpg?_nc_cat=100&ccb=1-7&_nc_sid=7d201b&_nc_ohc=WAQm8_AAFBcQ7kNvgGsHnmn&_nc_zt=23&_nc_ht=scontent.fbom19-3.fna&edm=AL-3X8kEAAAA&oh=00_AYC2-uVsrI-kAmc0oc7FmCpqbCuwgxsOhCobV_av14Q5RQ&oe=67AA4C3C",
-            //     "followers_count": 0,
-            //     "media_count": 9,
-            //     "has_profile_pic": true,
-            //     "id": "17841472729451041"
-            //   }
-
         });
 
     } catch (error) {
@@ -505,6 +495,38 @@ app.post('/api/instagram/post', async (req, res) => {
 });
 
 
+app.get('/api/product/:product_slug', async (req, res) => {
+    try {
+        const { product_slug } = req.params
+        const { company_id, application_id } = req.query;
+        
+        // GET /service/platform/configuration/v1.0/company/{company_id}/application
+
+        // Fetch Instagram Business Account details
+        const response = await axios.get(
+            `https://graph.facebook.com/v18.0/${instagramBusinessId}`,
+            {
+                params: {
+                    fields: 'username,profile_picture_url,name,biography,website,followers_count,media_count',
+                    access_token: accessToken
+                }
+            }
+        );
+
+        return res.status(200).json({
+            success: true,
+            data: response.data
+        });
+
+    } catch (error) {
+        console.error('Error fetching Instagram account:', error.response?.data || error);
+        return res.status(500).json({
+            success: false,
+            message: 'Failed to fetch Instagram account details',
+            error: error.message
+        });
+    }
+});
 
 
 
@@ -515,6 +537,11 @@ productRouter.get('/', async function view(req, res, next) {
         const {
             platformClient
         } = req;
+
+        console.log("platformClient :: ", {
+            platformClient
+        });
+        
         const data = await platformClient.catalog.getProducts()
         return res.json(data);
     } catch (err) {
@@ -530,7 +557,32 @@ productRouter.get('/application/:application_id', async function view(req, res, 
         } = req;
         const { application_id } = req.params;
         const data = await platformClient.application(application_id).catalog.getAppProducts()
+        const accData = await platformClient.application(application_id);
+        
+        console.log({
+            accData
+        });
+        
+        // Assuming data contains product descriptions
+        const descriptions = data.map(product => product.description);
+        const captions = await Promise.all(descriptions.map(desc => generateCaption(desc)));
+        
+        
         return res.json(data);
+    } catch (err) {
+        next(err);
+    }
+});
+
+productRouter.post('/generate-captions', async function(req, res, next) {
+    try {
+        const { description } = req.body;
+        if (!description) {
+            return res.status(400).json({ error: 'Product description is required' });
+        }
+
+        // const captions = await generateCaptions(description);
+        return res.json({ data: {} });
     } catch (err) {
         next(err);
     }

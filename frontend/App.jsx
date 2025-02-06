@@ -42,13 +42,14 @@ function App() {
   const [activeStep, setActiveStep] = useState(0);
   const [progressData, setProgressData] = useState({});
   const [authData, setAuthData] = useState({
-    isSellerAuthentiated: false, // true means 
+    isSellerAuthentiated: false,
     platformDomain: "https://platform.fynd.com",
     extensionId: "67a36d8bd215866dcb2da3ef",
   });
   const { company_id, application_id } = useParams();
 
   useEffect(() => {
+    fetchInstaUserAccount();
     fetchAuthData();
   }, [company_id, application_id]);
 
@@ -63,6 +64,7 @@ function App() {
       if (res.status === 200) {
         if (res?.data?.isSellerAuthentiated) {
           setActiveStep(1);
+          fetchInstaUserAccount();
         }
 
         setAuthData({
@@ -79,6 +81,23 @@ function App() {
     }
   };
 
+
+  const fetchInstaUserAccount = async () => {
+    try {
+      const accountRes = await axios.get(`/api/instagram/account`, {
+        params: { company_id, application_id },
+      });
+
+      setAuthData({
+        ...authData,
+        instaAccountData: accountRes?.data?.data || {}
+      })
+      
+    } catch (err) {
+      console.log("fetchInstaUserAccount :: ", err);
+    }
+  }
+
   const moveToNextStep = () => {
     setActiveStep(activeStep + 1);
   };
@@ -93,7 +112,7 @@ function App() {
       ...data,
     });
     moveToNextStep();
-  }
+  };
 
   const PrepareStepContent = () => {
     switch (activeStep) {
@@ -104,6 +123,7 @@ function App() {
       case 2:
         return (
           <GenerateCaption
+          authData={authData}
             progressData={progressData}
             moveToBackStep={moveToBackStep}
             moveToNextStep={moveToNextStep}
@@ -111,7 +131,13 @@ function App() {
           />
         );
       case 3:
-        return <PublishPost moveToBackStep={moveToBackStep} moveToNextStep={moveToNextStep} handleSubmit={handleSubmitAndStoreData} />;
+        return (
+          <PublishPost
+            moveToBackStep={moveToBackStep}
+            moveToNextStep={moveToNextStep}
+            handleSubmit={handleSubmitAndStoreData}
+          />
+        );
       default:
         return <div>Step 1</div>;
     }

@@ -33,3 +33,49 @@
 .back-icon-container:hover {
   background-color: #f3f3f3;
 }
+
+.desc-title {
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.caption-description {
+  display: flex;
+  flex-direction: column;
+  margin-top: 24px;
+  margin-bottom: 24px;
+  gap: 12px;
+}
+
+.title-container {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.title-container .sales-channel-title {
+  flex: 1;
+  /* text-align: center; */
+  margin: 0;
+}
+
+.description-value {
+  background-color: #f3f3f3;
+  font-size: 12px;
+}
+
+p {
+  margin: 0 8px !important;
+}
+
+.description-value {
+  max-height: 50px !important;
+  font-size: 12px !important;
+  overflow: auto;
+}
+
+.description-value p {
+  font-size: 12px !important;
+  max-height: 50px !important;
+  overflow: auto;
+}
