@@ -16,6 +16,9 @@ import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import "./style/PublishPost.css";
 import { CTAtitles } from "../constants";
+import urlJoin from "url-join";
+
+const EXAMPLE_MAIN_URL = window.location.origin;
 
 const PublishPost = ({
   authData,
@@ -25,21 +28,60 @@ const PublishPost = ({
   moveToBackStep = () => {},
 }) => {
   const { company_id, application_id } = useParams();
-  const [catTitle, setCatTitle] = useState("");
+  const [ctaTitle, setCtaTitle] = useState("");
   const [budgetAmount, setBudgetAmount] = useState();
   const [minAge, setMinAge] = useState("");
   const [maxAge, setMaxAge] = useState("");
+  const [pdpLink, setPdpLink] = useState("");
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
     // setProductDescription(progressData?.selectedProduct?.description);
+    if (progressData?.selectedProduct?.slug) {
+      fetchPDPLink();
+    }
+
+    if (progressData?.ctaTitle) {
+      setCtaTitle(progressData?.ctaTitle);
+    }
+
+    if (progressData?.budgetAmount) {
+      setBudgetAmount(progressData?.budgetAmount);
+    }
+
+    if (progressData?.minAge) {
+      setMinAge(progressData?.minAge);
+    }
+
+    if (progressData?.maxAge) {
+      setMaxAge(progressData?.maxAge);
+    }
   }, [progressData]);
+
+  const fetchPDPLink = async () => {
+    try {
+      const { data } = await axios.get(
+        urlJoin(
+          EXAMPLE_MAIN_URL,
+          `/api/products/${progressData?.selectedProduct?.slug}/application/${application_id}`
+        ),
+        {
+          headers: {
+            "x-company-id": company_id,
+          },
+        }
+      );
+      setPdpLink(data?.pdpURL || "");
+    } catch (error) {
+      console.error("Error fetching PDP Link", error);
+    }
+  };
 
   const storeAndmoveToNextStep = async () => {
     try {
-      const err = validateFields();
-      if (Object(err).keys.length > 0) {
-        setErrors(err);
+      const errors = validateFields();
+      if (Object(errors)?.keys?.length > 0) {
+        setErrors(errors);
         return;
       }
 
@@ -48,12 +90,13 @@ const PublishPost = ({
       const payload = {
         imageUrl: progressData?.selectedImage?.url,
         caption:
-          progressData?.selectedImage?.productCaption +
-          progressData?.selectedImage?.productHashtag.join(" "),
+          progressData?.productCaption +
+          progressData?.productHashtag?.join(" "),
         company_id,
         application_id,
         createAd: false,
       };
+
       const response = await axios.post("/api/instagram/post", payload);
 
       if (response?.data?.success) {
@@ -66,8 +109,8 @@ const PublishPost = ({
 
   const validateFields = () => {
     const error = {};
-    if (!catTitle) {
-      error.catTitle = "Cat Title is required";
+    if (!ctaTitle) {
+      error.ctaTitle = "Cat Title is required";
     }
 
     if (!budgetAmount || budgetAmount < 87) {
@@ -80,10 +123,14 @@ const PublishPost = ({
 
     if (!maxAge) {
       error.maxAge = "Max age is required.";
+    } else if (maxAge < minAge) {
+      error.maxAge = "Max age should be greater then min age";
     }
 
     return error;
   };
+
+  const isSubmitDisabled = Object.keys(validateFields())?.length > 0;
 
   return (
     <div className="generate-caption-conatiner">
@@ -91,7 +138,17 @@ const PublishPost = ({
         <div className="caption-description-container">
           <div>
             <div className="title-container">
-              <span className="back-icon-container" onClick={moveToBackStep}>
+              <span
+                className="back-icon-container"
+                onClick={() => {
+                  moveToBackStep({
+                    ctaTitle,
+                    budgetAmount,
+                    minAge,
+                    maxAge,
+                  });
+                }}
+              >
                 <ArrowBackIcon />
               </span>
               <div className="sales-channel-title">
@@ -106,8 +163,9 @@ const PublishPost = ({
                   labelId="cat-title-demo-label"
                   id="cat-title-demo"
                   label="CTA Title"
-                  value={catTitle}
-                  onChange={(e) => setCatTitle(e.target.value)}
+                  value={ctaTitle}
+                  onChange={(e) => setCtaTitle(e.target.value)}
+                  hiddenLabel={errors?.ctaTitle}
                 >
                   {CTAtitles?.map((CTAtitle, CTAtitleIndex) => {
                     return (
@@ -131,6 +189,7 @@ const PublishPost = ({
                   label="Amount"
                   value={budgetAmount}
                   onChange={(e) => setBudgetAmount(e.target.value)}
+                  hiddenLabel={errors?.budgetAmount}
                 />
               </FormControl>
             </div>
@@ -148,6 +207,7 @@ const PublishPost = ({
                     },
                   }}
                   value={minAge}
+                  hiddenLabel={errors?.minAge}
                   onChange={(e) => setMinAge(e.target.value)}
                 />
                 <TextField
@@ -160,6 +220,7 @@ const PublishPost = ({
                     },
                   }}
                   value={maxAge}
+                  hiddenLabel={errors?.maxAge}
                   onChange={(e) => setMaxAge(e.target.value)}
                 />
               </div>
@@ -170,23 +231,24 @@ const PublishPost = ({
               variant="contained"
               color="primary"
               fullWidth
-              disabled={() => {
-                const errs = validateFields();
-                return Object.keys(errs)?.length > 0;
-              }}
+              disabled={isSubmitDisabled}
               onClick={storeAndmoveToNextStep}
             >
               Next
             </Button>
           </div>
         </div>
-        <div className="instagram-post-previw-container">
+        <div className="instagram-post-preview-container">
           <InstaPost
             imageUrl={progressData?.selectedImage?.url}
             profileImageUrl={authData?.instaAccountData?.profile_picture_url}
             accountName={authData?.instaAccountData?.username}
             caption={progressData?.productCaption}
             hashtag={progressData?.productHashtag?.join(" ") || ""}
+            pdpLink={pdpLink}
+            ctaButtonText={
+              CTAtitles?.find((value) => value.value === ctaTitle)?.title
+            }
           />
         </div>
       </div>

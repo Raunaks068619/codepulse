@@ -141,7 +141,6 @@
 }
 
 .landing-page {
-  font-family: "Inter";
   position: relative;
   width: 100%;
   box-sizing: border-box;
@@ -154,6 +153,8 @@
 .landing-page .content-card .sales-description {
   font-size: 14px;
   color: #9b9b9b;
+  margin-left: 0 !important;
+  margin-bottom: 12px !important;
 }
 
 .landing-page .nitrozen-svg-icon.search-icon {

@@ -551,29 +551,21 @@ app.post('/api/instagram/post', async (req, res) => {
 });
 
 
-app.get('/api/product/:product_slug', async (req, res) => {
+productRouter.get('/:product_slug/application/:application_id', async (req, res) => {
     try {
-        const { product_slug } = req.params
-        const { company_id, application_id } = req.query;
+        const { application_id, product_slug } = req.params;
 
-        // GET /service/platform/configuration/v1.0/company/{company_id}/application
+        const applicationClient = req?.platformClient?.application(application_id);        
+        const resp = await applicationClient?.configuration?.getDomains({
+            companyId: req.headers['x-company-id'],
+            applicationId: application_id,
+        })
 
-        // Fetch Instagram Business Account details
-        const response = await axios.get(
-            `https://graph.facebook.com/v18.0/${instagramBusinessId}`,
-            {
-                params: {
-                    fields: 'username,profile_picture_url,name,biography,website,followers_count,media_count',
-                    access_token: accessToken
-                }
-            }
-        );
+        const pdpURL = `https://${resp?.domains?.[0]?.name}/product/${product_slug}`
 
-        return res.status(200).json({
-            success: true,
-            data: response.data
+        return res.json({
+            pdpURL
         });
-
     } catch (error) {
         console.error('Error fetching Instagram account:', error.response?.data || error);
         return res.status(500).json({
@@ -595,25 +587,6 @@ productRouter.get('/', async function view(req, res, next) {
         const {
             platformClient
         } = req;
-
-        console.log("platformClient :: ", {
-            platformClient
-        });
-        
-        const applicationClient = req.platformClient?.application('67a34fa50b56330d2a3526d4');        
-        const response = await applicationClient.configuration.getApplication();
-        
-        const resp = await applicationClient.configuration.getDomains({
-            companyId: "9707",
-            applicationId: "67a34fa50b56330d2a3526d4",
-        })
-
-        const url = `https://${resp.domains[0]?.name}/order-tracking}`
-
-        console.log({
-            resp: JSON.stringify(resp),
-            url
-        });
         
         const data = await platformClient.catalog.getProducts()
         return res.json(data);
@@ -628,16 +601,9 @@ productRouter.get('/application/:application_id', async function view(req, res, 
         const {
             platformClient
         } = req;
+        
         const { application_id } = req.params;
         const data = await platformClient.application(application_id).catalog.getAppProducts()
-        const accData = await platformClient.application(application_id);
-
-        console.log({
-            accData
-        });
-
-        // Assuming data contains product descriptions
-
         return res.json(data);
     } catch (err) {
         next(err);

@@ -15,8 +15,15 @@
 }
 
 .caption-description-container,
-.instagram-post-previw-container {
+.instagram-post-preview-container {
   width: 50%;
+}
+
+.instagram-post-preview-container {
+  transform: scale(0.9);
+  margin-bottom: -40px;
+  margin-top: -20px;
+  margin-left: 120px;
 }
 
 .caption-description-container {

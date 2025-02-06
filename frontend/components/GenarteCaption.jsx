@@ -13,9 +13,11 @@ const GenerateCaption = ({
   moveToNextStep = () => { },
   moveToBackStep = () => { },
 }) => {
+  const randomHashtag = defaultHashtags[Math.floor(Math.random() * defaultHashtags.length)];
+
   const [productDescription, setProductDescription] = useState("");
   const [productCaption, setProductCaption] = useState("");
-  const [productHashtag, setProductHashtag] = useState([defaultHashtags[13].title]);
+  const [productHashtag, setProductHashtag] = useState([randomHashtag?.title]);
 
 
   console.log({ progressData });
@@ -61,7 +63,6 @@ const GenerateCaption = ({
     }
   }, [productDescription])
 
-
   return (
     <div className="generate-caption-conatiner">
       <div className="caption-container">
@@ -72,6 +73,10 @@ const GenerateCaption = ({
                 moveToBackStep({
                   productCaption: null,
                   productHashtag: null,
+                  ctaTitle: null,
+                  budgetAmount: null,
+                  minAge: null,
+                  maxAge: null
                 });
               }}>
                 <ArrowBackIcon />
@@ -168,12 +173,7 @@ const GenerateCaption = ({
             </Button>
           </div>
         </div>
-        <div style={{
-          transform: 'scale(0.9)',
-          marginBottom: '-40px',
-          marginTop: '-20px',
-          marginLeft: "120px"
-        }} className="instagram-post-preview-container">
+        <div className="instagram-post-preview-container">
           <InstaPost
             imageUrl={progressData?.selectedImage?.url}
             profileImageUrl={authData?.instaAccountData?.profile_picture_url}
