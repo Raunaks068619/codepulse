@@ -138,7 +138,8 @@ function App() {
   const PrepareStepContent = () => {
     switch (activeStep) {
       case 0:
-        return <InstaAuthLogin moveToNextStep={moveToNextStep} />;
+        // return <InstagramAuthForm />
+      return <InstaAuthLogin moveToNextStep={moveToNextStep} />;
       case 1:
         return <ProductListing handleSubmit={handleSubmitAndStoreData} />;
       case 2:
