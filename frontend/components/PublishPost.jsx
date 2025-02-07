@@ -334,7 +334,7 @@ const PublishPost = ({
               disabled={isSubmitDisabled}
               onClick={storeAndmoveToNextStep}
             >
-              Next
+              Publish
             </Button>
           </div>
         </div>
