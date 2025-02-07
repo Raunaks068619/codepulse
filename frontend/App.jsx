@@ -53,7 +53,7 @@ function App() {
   }, [progressData]);
 
   useEffect(() => {
-    fetchInstaUserAccount();
+    // fetchInstaUserAccount();
     fetchAuthData();
   }, [company_id, application_id]);
 
@@ -68,7 +68,7 @@ function App() {
       if (res.status === 200) {
         if (res?.data?.isSellerAuthentiated) {
           setActiveStep(1);
-          fetchInstaUserAccount();
+          // fetchInstaUserAccount();
         }
 
         setAuthData({
@@ -85,20 +85,20 @@ function App() {
     }
   };
 
-  const fetchInstaUserAccount = async () => {
-    try {
-      const accountRes = await axios.get(`/api/instagram/account`, {
-        params: { company_id, application_id },
-      });
+  // const fetchInstaUserAccount = async () => {
+  //   try {
+  //     const accountRes = await axios.get(`/api/instagram/account`, {
+  //       params: { company_id, application_id },
+  //     });
 
-      setAuthData({
-        ...authData,
-        instaAccountData: accountRes?.data?.data || {},
-      });
-    } catch (err) {
-      console.log("fetchInstaUserAccount :: ", err);
-    }
-  };
+  //     setAuthData({
+  //       ...authData,
+  //       instaAccountData: accountRes?.data?.data || {},
+  //     });
+  //   } catch (err) {
+  //     console.log("fetchInstaUserAccount :: ", err);
+  //   }
+  // };
 
   const moveToNextStep = () => {
     setActiveStep(activeStep + 1);

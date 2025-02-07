@@ -7,6 +7,7 @@ import {
   OutlinedInput,
   InputAdornment,
   InputLabel,
+  FormHelperText,
 } from "@mui/material";
 import InstaPost from "./InstaPost";
 import "./style/GenerateCaption.css";
@@ -79,7 +80,12 @@ const PublishPost = ({
 
   const storeAndmoveToNextStep = async () => {
     try {
-      const errors = validateFields();
+      const errors = validateFields({
+        ctaTitleLocal: ctaTitle,
+        budgetAmountLocal: budgetAmount,
+        minAgeLocal: minAge,
+        maxAgeLocal: maxAge,
+      });
       if (Object(errors)?.keys?.length > 0) {
         setErrors(errors);
         return;
@@ -107,30 +113,80 @@ const PublishPost = ({
     }
   };
 
-  const validateFields = () => {
+  const handleOnChange = (event, name) => {
+    const value = event?.target?.value;
+    let errors = {};
+    switch (name) {
+      case "ctaTitle":
+        setCtaTitle(value);
+        errors = validateFields({
+          ctaTitleLocal: value,
+        });
+        break;
+      case "budgetAmount":
+        setBudgetAmount(value);
+        errors = validateFields({
+          budgetAmountLocal: value,
+        });
+        break;
+      case "minAge":
+        setMinAge(value);
+        errors = validateFields({
+          minAgeLocal: value,
+        });
+        break;
+      case "maxAge":
+        setMaxAge(value);
+        errors = validateFields({
+          maxAgeLocal: value,
+        });
+        break;
+      default:
+        break;
+    }
+
+    setErrors({ ...errors });
+  };
+
+  const validateFields = ({
+    ctaTitleLocal = ctaTitle,
+    budgetAmountLocal = budgetAmount,
+    minAgeLocal = minAge,
+    maxAgeLocal = maxAge,
+  }) => {
     const error = {};
-    if (!ctaTitle) {
+    if (!ctaTitleLocal) {
       error.ctaTitle = "Cat Title is required";
     }
 
-    if (!budgetAmount || budgetAmount < 87) {
-      error.budgetAmount = "budget should be greater then ₹87.";
+    if (!budgetAmountLocal || budgetAmountLocal < 87) {
+      error.budgetAmount = "budget should be greater then ₹87";
     }
 
-    if (!minAge) {
+    if (!minAgeLocal) {
       error.minAge = "Min age is required.";
+    } else if (minAgeLocal < 18) {
+      error.minAge = "Min age should be geater then 18";
     }
 
-    if (!maxAge) {
+    if (!maxAgeLocal) {
       error.maxAge = "Max age is required.";
-    } else if (maxAge < minAge) {
+    } else if (maxAgeLocal < minAgeLocal) {
       error.maxAge = "Max age should be greater then min age";
     }
 
     return error;
   };
 
-  const isSubmitDisabled = Object.keys(validateFields())?.length > 0;
+  const isSubmitDisabled =
+    Object.keys(
+      validateFields({
+        ctaTitleLocal: ctaTitle,
+        budgetAmountLocal: budgetAmount,
+        minAgeLocal: minAge,
+        maxAgeLocal: maxAge,
+      })
+    )?.length > 0;
 
   return (
     <div className="generate-caption-conatiner">
@@ -157,41 +213,50 @@ const PublishPost = ({
             </div>
             <div className="campaign-details-conatainer">
               <h3>Campign Data</h3>
-              <FormControl fullWidth>
-                <InputLabel id="cat-title-demo-label">CTA Title</InputLabel>
-                <Select
-                  labelId="cat-title-demo-label"
-                  id="cat-title-demo"
-                  label="CTA Title"
-                  value={ctaTitle}
-                  onChange={(e) => setCtaTitle(e.target.value)}
-                  hiddenLabel={errors?.ctaTitle}
-                >
-                  {CTAtitles?.map((CTAtitle, CTAtitleIndex) => {
-                    return (
-                      <MenuItem index={CTAtitleIndex} value={CTAtitle?.value}>
-                        {CTAtitle?.title}
-                      </MenuItem>
-                    );
-                  })}
-                </Select>
-              </FormControl>
+              <div className="age-conatiner">
+                <FormControl fullWidth>
+                  <InputLabel id="cat-title-demo-label">CTA Title</InputLabel>
+                  <Select
+                    labelId="cat-title-demo-label"
+                    id="cat-title-demo"
+                    label="CTA Title"
+                    value={ctaTitle}
+                    onChange={(e) => handleOnChange(e, "ctaTitle")}
+                    error={!!errors?.ctaTitle}
+                    helperText={errors?.ctaTitle}
+                  >
+                    {CTAtitles?.map((CTAtitle, CTAtitleIndex) => {
+                      return (
+                        <MenuItem index={CTAtitleIndex} value={CTAtitle?.value}>
+                          {CTAtitle?.title}
+                        </MenuItem>
+                      );
+                    })}
+                  </Select>
+                </FormControl>
 
-              <FormControl sx={{ mt: 2 }} fullWidth>
-                <InputLabel htmlFor="amount-budget">Amount</InputLabel>
-                <OutlinedInput
-                  id="amount-budget"
-                  type="number"
-                  min={87}
-                  startAdornment={
-                    <InputAdornment position="start">₹</InputAdornment>
-                  }
-                  label="Amount"
-                  value={budgetAmount}
-                  onChange={(e) => setBudgetAmount(e.target.value)}
-                  hiddenLabel={errors?.budgetAmount}
-                />
-              </FormControl>
+                <FormControl fullWidth>
+                  <InputLabel htmlFor="amount-budget">Amount</InputLabel>
+                  <OutlinedInput
+                    id="amount-budget"
+                    type="number"
+                    min={87}
+                    startAdornment={
+                      <InputAdornment position="start">₹</InputAdornment>
+                    }
+                    label="Amount"
+                    value={budgetAmount}
+                    onChange={(e) => handleOnChange(e, "budgetAmount")}
+                    error={!!errors?.budgetAmount}
+                    helperText={
+                      errors?.budgetAmount || "Minimum budget should be ₹87"
+                    }
+                  />
+                  <FormHelperText sx={{ color: "red" }}>
+                    {errors?.budgetAmount || "Minimum budget should be ₹87"}
+                  </FormHelperText>
+                </FormControl>
+              </div>
             </div>
             <div className="target-audiance-container">
               <h3>Target Audience</h3>
@@ -207,8 +272,9 @@ const PublishPost = ({
                     },
                   }}
                   value={minAge}
-                  hiddenLabel={errors?.minAge}
-                  onChange={(e) => setMinAge(e.target.value)}
+                  onChange={(e) => handleOnChange(e, "minAge")}
+                  error={!!errors?.minAge}
+                  helperText={errors?.minAge || "Minimum age should be 18"}
                 />
                 <TextField
                   id="max-age"
@@ -220,8 +286,9 @@ const PublishPost = ({
                     },
                   }}
                   value={maxAge}
-                  hiddenLabel={errors?.maxAge}
-                  onChange={(e) => setMaxAge(e.target.value)}
+                  onChange={(e) => handleOnChange(e, "maxAge")}
+                  error={!!errors?.maxAge}
+                  helperText={errors?.maxAge}
                 />
               </div>
             </div>
