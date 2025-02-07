@@ -252,7 +252,7 @@ const PublishPost = ({
                       errors?.budgetAmount || "Minimum budget should be ₹87"
                     }
                   />
-                  <FormHelperText sx={{ color: "red" }}>
+                  <FormHelperText sx={{ color: errors?.budgetAmount ? "red" : "gray" }}>
                     {errors?.budgetAmount || "Minimum budget should be ₹87"}
                   </FormHelperText>
                 </FormControl>
