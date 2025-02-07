@@ -141,13 +141,13 @@ app.post('/api/generate-captions', async (req, res) => {
             messages: [{
                 role: "system",
                 content: `
+                Taking this caption in context ${caption}
                 You are a social media expert. Always respond with valid JSON in the following strict format:  
                 [
                 "tag1",
                 "tag2",
                 "tag3"
                 ]
-
                 The response must be **an array of exactly three strings** and nothing else. No extra text, objects, or formatting—only the required array of three strings. This is extremely important.`
             },],
             max_tokens: 50,
@@ -326,17 +326,18 @@ app.post('/api/instagram/post', async (req, res) => {
             company_id,
             application_id,
             createAd = false,
-            adConfig = {
-                cta_type: 'SHOP_NOW',
-                daily_budget: 8700, // in cents ($5)
-                campaign_name: 'FYND_AD_CAMPAIGN',
-                website_url: 'https://codepulse.fynd.io/product/m6qeb3cr_co-13438877',
-                targeting: {
-                    age_min: 18,
-                    age_max: 65,
-                    countries: ['IN']
-                }
-            }
+            adConfig
+            // = {
+            //     cta_type: 'SHOP_NOW',
+            //     daily_budget: 8700, // in cents ($5)
+            //     campaign_name: 'FYND_AD_CAMPAIGN',
+            //     website_url: 'https://codepulse.fynd.io/product/m6qeb3cr_co-13438877',
+            //     targeting: {
+            //         age_min: 18,
+            //         age_max: 65,
+            //         countries: ['IN']
+            //     }
+            // }
         } = req.body;
 
         // Validate inputs
@@ -498,10 +499,9 @@ app.post('/api/instagram/post', async (req, res) => {
                             source_instagram_media_id: postId,
                             call_to_action: {
                                 value: {
-                                    app_destination: "INSTAGRAM_DIRECT",
-                                    link: 'https://codepulse.fynd.io/product/m6qeb33n_co-13438875'
+                                    link: adConfig.website_url
                                 },
-                                type: "MESSAGE_PAGE"
+                                type: adConfig.cta_type
                             },
                             // call_to_action_type: adConfig.cta_type,
                             // link_data: {

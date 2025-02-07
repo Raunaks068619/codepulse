@@ -24,9 +24,9 @@ const EXAMPLE_MAIN_URL = window.location.origin;
 const PublishPost = ({
   authData,
   progressData,
-  handleSubmit = () => {},
-  moveToNextStep = () => {},
-  moveToBackStep = () => {},
+  handleSubmit = () => { },
+  moveToNextStep = () => { },
+  moveToBackStep = () => { },
 }) => {
   const { company_id, application_id } = useParams();
   const [ctaTitle, setCtaTitle] = useState("");
@@ -107,11 +107,22 @@ const PublishPost = ({
       const response = await axios.post('/api/instagram/post', {
         imageUrl: progressData?.selectedImage?.url,
         caption:
-        progressData?.productCaption +
-        progressData?.productHashtag?.join(" "),
+          progressData?.productCaption +
+          progressData?.productHashtag?.join(" "),
         company_id,
         application_id,
-        createAd: true
+        createAd: true,
+        adConfig: {
+          cta_type: ctaTitle,
+          daily_budget: Number(budgetAmount) * 100, // in rupees
+          campaign_name: 'CODEPULSE_FYND_AD_CAMPAIGN',
+          website_url: pdpLink,
+          targeting: {
+            age_min: Number(minAge),
+            age_max: Number(maxAge),
+            countries: ['IN']
+          }
+        }
       });
 
       if (response.data.success) {
