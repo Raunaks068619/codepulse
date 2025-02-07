@@ -44,5 +44,5 @@ export const defaultHashtags = [
 export const CTAtitles = [
   { title: "Shop Now", value: "SHOP_NOW" },
   { title: "Buy Now", value: "BUY_NOW" },
-  { title: "Purchase", value: "PURCHASE" },
+  { title: "Order Noew", value: "ORDER_NOW" },
 ];
