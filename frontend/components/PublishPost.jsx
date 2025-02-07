@@ -41,7 +41,7 @@ const PublishPost = ({
   const [pdpLink, setPdpLink] = useState("");
   const [errors, setErrors] = useState({});
   const [successResponse, setSuccessResponse] = useState({});
-  const [showModal, setShowModal] = useState(true);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     // setProductDescription(progressData?.selectedProduct?.description);
