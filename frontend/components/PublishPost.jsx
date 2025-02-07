@@ -103,7 +103,23 @@ const PublishPost = ({
         createAd: false,
       };
 
-      const response = await axios.post("/api/instagram/post", payload);
+      // const response = await axios.post("/api/instagram/post", payload);
+      const response = await axios.post('/api/instagram/post', {
+        imageUrl: progressData?.selectedImage?.url,
+        caption:
+        progressData?.productCaption +
+        progressData?.productHashtag?.join(" "),
+        company_id,
+        application_id,
+        createAd: true
+      });
+
+      if (response.data.success) {
+        console.log({ response });
+
+        // setSuccess(true);
+        // moveToNextStep();
+      }
 
       if (response?.data?.success) {
         console.log({ response });

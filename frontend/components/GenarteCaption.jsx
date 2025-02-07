@@ -39,12 +39,8 @@ const GenerateCaption = ({
   const getCaption = async () => {
     try {
       const response = await axios.post('/api/generate-captions', { description: productDescription });
-
-      console.log({ caption: response.data.caption });
-      console.log({ hashtag: JSON.parse(response.data.hashtags) });
-
       setProductCaption(response.data.caption)
-      setProductHashtag(productHashtag, JSON.parse(response.data.hashtags));
+      setProductHashtag(JSON.parse(response.data.hashtags));
 
     } catch (error) {
       console.error('Error fetching caption:', error);

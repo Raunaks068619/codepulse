@@ -112,7 +112,6 @@ app.post('/api/auth/login', (req, res) => {
 
 
 app.post('/api/generate-captions', async (req, res) => {
-    console.log(req.body);
 
     const { description } = req.body
     const promptArray = [
@@ -126,7 +125,7 @@ app.post('/api/generate-captions', async (req, res) => {
     try {
         const captionResponse = await axios.post("https://api.openai.com/v1/chat/completions", {
             model: "gpt-3.5-turbo",
-            messages: [{ role: "user", content: `create caption from this product description html ${description}, muts be a normal string  no "" or '' is needed i need only text` }],
+            messages: [{ role: "user", content: description ? `create caption from this product description html ${description}, muts be a normal string  no "" or '' is needed i need only text` : promptArray[choice] }],
             max_tokens: 50,
         }, {
             headers: {
@@ -141,7 +140,15 @@ app.post('/api/generate-captions', async (req, res) => {
             model: "gpt-3.5-turbo",
             messages: [{
                 role: "system",
-                content: `You are a social media expert. Always respond with valid JSON in the format for this caption: ${caption}, strictly in this format which is an array, nothing other than this provided array of string only array of string must be there its is very very important must be 3 there must be 3 strins in the array: ["tag1", "tag2", "tag3"]`
+                content: `
+                You are a social media expert. Always respond with valid JSON in the following strict format:  
+                [
+                "tag1",
+                "tag2",
+                "tag3"
+                ]
+
+                The response must be **an array of exactly three strings** and nothing else. No extra text, objects, or formatting—only the required array of three strings. This is extremely important.`
             },],
             max_tokens: 50,
         }, {
@@ -214,7 +221,7 @@ app.get('/api/instagram/auth', async (req, res) => {
         // For each account, fetch the Instagram Business Account
         const accountsWithInstagram = await Promise.all(accountsData.data.map(async (account) => {
             const instagramResponse = await fetch(`https://graph.facebook.com/v22.0/${account.id}?fields=instagram_business_account&access_token=${accessToken}`);
-            const instagramData = await instagramResponse.json();
+            const instagramData = await instagramResponse.json(); // store pageId = account.id in secrete table in DB 
             return {
                 ...account,
                 instagram_business_account: instagramData.instagram_business_account || null
@@ -350,7 +357,7 @@ app.post('/api/instagram/post', async (req, res) => {
 
         // Create media container
         const containerResponse = await axios.post(
-            `https://graph.facebook.com/v18.0/${instagramBusinessId}/media`,
+            `https://graph.facebook.com/v22.0/${instagramBusinessId}/media`,
             null,
             {
                 params: {
@@ -367,7 +374,7 @@ app.post('/api/instagram/post', async (req, res) => {
 
         // Publish the container
         const publishResponse = await axios.post(
-            `https://graph.facebook.com/v18.0/${instagramBusinessId}/media_publish`,
+            `https://graph.facebook.com/v22.0/${instagramBusinessId}/media_publish`,
             null,
             {
                 params: {
@@ -381,7 +388,7 @@ app.post('/api/instagram/post', async (req, res) => {
 
         // Get post permalink
         const mediaResponse = await axios.get(
-            `https://graph.facebook.com/v18.0/${postId}`,
+            `https://graph.facebook.com/v22.0/${postId}`,
             {
                 params: {
                     fields: 'permalink',
@@ -398,18 +405,18 @@ app.post('/api/instagram/post', async (req, res) => {
                 // Create Campaign
                 console.log('Creating Campaign with params:', {
                     name: adConfig.campaign_name,
-                    objective: 'OUTCOME_TRAFFIC',
+                    objective: 'OUTCOME_SALES',
                     status: 'ACTIVE',
                     special_ad_categories: '[]',
                     access_token: accessToken
                 });
                 const campaignResponse = await axios.post(
-                    `https://graph.facebook.com/v18.0/act_${adAccountId}/campaigns`,
+                    `https://graph.facebook.com/v22.0/act_${adAccountId}/campaigns`,
                     null,
                     {
                         params: {
                             name: adConfig.campaign_name,
-                            objective: 'OUTCOME_TRAFFIC',
+                            objective: 'OUTCOME_SALES',
                             status: 'ACTIVE',
                             special_ad_categories: '[]',
                             access_token: accessToken
@@ -439,7 +446,7 @@ app.post('/api/instagram/post', async (req, res) => {
                     access_token: accessToken
                 });
                 const adSetResponse = await axios.post(
-                    `https://graph.facebook.com/v18.0/act_${adAccountId}/adsets`,
+                    `https://graph.facebook.com/v22.0/act_${adAccountId}/adsets`,
                     null,
                     {
                         params: {
@@ -450,6 +457,8 @@ app.post('/api/instagram/post', async (req, res) => {
                             optimization_goal: 'LINK_CLICKS',
                             bid_strategy: 'LOWEST_COST_WITHOUT_CAP',
                             targeting: JSON.stringify({
+                                publisher_platforms: ["instagram"],
+                                instagram_positions: ["stream", "explore", "explore_home"],
                                 age_min: adConfig.targeting.age_min,
                                 age_max: adConfig.targeting.age_max,
                                 genders: [1, 2],
@@ -480,20 +489,29 @@ app.post('/api/instagram/post', async (req, res) => {
                     access_token: accessToken
                 });
                 const creativeResponse = await axios.post(
-                    `https://graph.facebook.com/v18.0/act_${adAccountId}/adcreatives`,
+                    `https://graph.facebook.com/v22.0/act_${adAccountId}/adcreatives`,
                     null,
                     {
                         params: {
-                            object_story_id: postId,
-                            call_to_action_type: adConfig.cta_type,
-                            link_data: {
-                                call_to_action: {
-                                    type: adConfig.cta_type,
-                                    value: {
-                                        link: adConfig.website_url
-                                    }
-                                }
+                            object_id: '606013975918017',
+                            instagram_user_id: instagramBusinessId,
+                            source_instagram_media_id: postId,
+                            call_to_action: {
+                                value: {
+                                    app_destination: "INSTAGRAM_DIRECT",
+                                    link: 'https://codepulse.fynd.io/product/m6qeb33n_co-13438875'
+                                },
+                                type: "MESSAGE_PAGE"
                             },
+                            // call_to_action_type: adConfig.cta_type,
+                            // link_data: {
+                            //     call_to_action: {
+                            //         type: adConfig.cta_type,
+                            //         value: {
+                            //             link: adConfig.website_url
+                            //         }
+                            //     }
+                            // },
                             access_token: accessToken
                         }
                     }
@@ -510,7 +528,7 @@ app.post('/api/instagram/post', async (req, res) => {
                     access_token: accessToken
                 });
                 adResponse = await axios.post(
-                    `https://graph.facebook.com/v18.0/act_${adAccountId}/ads`,
+                    `https://graph.facebook.com/v22.0/act_${adAccountId}/ads`,
                     null,
                     {
                         params: {
@@ -522,23 +540,26 @@ app.post('/api/instagram/post', async (req, res) => {
                         }
                     }
                 );
+
+                console.log("adResponse", adResponse?.data);
+
+
+                return res.status(200).json({
+                    success: true,
+                    message: 'Posted successfully to Instagram',
+                    post_id: postId,
+                    permalink: mediaResponse.data.permalink,
+                    ad_data: adResponse ? {
+                        campaign_id: campaignId,
+                        ad_set_id: adSetId,
+                        creative_id: creativeId,
+                        ad_id: adResponse?.data
+                    } : null
+                });
             } catch (adError) {
                 console.error('Ad creation failed:', adError.response?.data || adError);
             }
         }
-
-        return res.status(200).json({
-            success: true,
-            message: 'Posted successfully to Instagram',
-            post_id: postId,
-            permalink: mediaResponse.data.permalink,
-            ad_data: adResponse ? {
-                campaign_id: campaignId,
-                ad_set_id: adSetId,
-                creative_id: creativeId,
-                ad_id: adResponse.data.id
-            } : null
-        });
 
     } catch (error) {
         console.error('Error:', error.response?.data || error);
@@ -555,7 +576,7 @@ productRouter.get('/:product_slug/application/:application_id', async (req, res)
     try {
         const { application_id, product_slug } = req.params;
 
-        const applicationClient = req?.platformClient?.application(application_id);        
+        const applicationClient = req?.platformClient?.application(application_id);
         const resp = await applicationClient?.configuration?.getDomains({
             companyId: req.headers['x-company-id'],
             applicationId: application_id,
@@ -587,7 +608,7 @@ productRouter.get('/', async function view(req, res, next) {
         const {
             platformClient
         } = req;
-        
+
         const data = await platformClient.catalog.getProducts()
         return res.json(data);
     } catch (err) {
@@ -601,7 +622,7 @@ productRouter.get('/application/:application_id', async function view(req, res, 
         const {
             platformClient
         } = req;
-        
+
         const { application_id } = req.params;
         const data = await platformClient.application(application_id).catalog.getAppProducts()
         return res.json(data);
