@@ -8,6 +8,8 @@ import {
   InputAdornment,
   InputLabel,
   FormHelperText,
+  IconButton,
+  Typography,
 } from "@mui/material";
 import InstaPost from "./InstaPost";
 import "./style/GenerateCaption.css";
@@ -18,15 +20,18 @@ import { useEffect, useState } from "react";
 import "./style/PublishPost.css";
 import { CTAtitles } from "../constants";
 import urlJoin from "url-join";
+import { Launch } from "@mui/icons-material";
+import { PostPublicSuccessModal } from "./PostPublicSuccessModal";
 
 const EXAMPLE_MAIN_URL = window.location.origin;
 
 const PublishPost = ({
   authData,
   progressData,
-  handleSubmit = () => { },
-  moveToNextStep = () => { },
-  moveToBackStep = () => { },
+  handleSubmit = () => {},
+  moveToNextStep = () => {},
+  moveToBackStep = () => {},
+  handleFinalSubmit = () => {}
 }) => {
   const { company_id, application_id } = useParams();
   const [ctaTitle, setCtaTitle] = useState("");
@@ -35,6 +40,8 @@ const PublishPost = ({
   const [maxAge, setMaxAge] = useState("");
   const [pdpLink, setPdpLink] = useState("");
   const [errors, setErrors] = useState({});
+  const [successResponse, setSuccessResponse] = useState({});
+  const [showModal, setShowModal] = useState(true);
 
   useEffect(() => {
     // setProductDescription(progressData?.selectedProduct?.description);
@@ -93,18 +100,8 @@ const PublishPost = ({
 
       setErrors(null);
 
-      const payload = {
-        imageUrl: progressData?.selectedImage?.url,
-        caption:
-          progressData?.productCaption +
-          progressData?.productHashtag?.join(" "),
-        company_id,
-        application_id,
-        createAd: false,
-      };
-
       // const response = await axios.post("/api/instagram/post", payload);
-      const response = await axios.post('/api/instagram/post', {
+      const response = await axios.post("/api/instagram/post", {
         imageUrl: progressData?.selectedImage?.url,
         caption:
           progressData?.productCaption +
@@ -115,21 +112,21 @@ const PublishPost = ({
         adConfig: {
           cta_type: ctaTitle,
           daily_budget: Number(budgetAmount) * 100, // in rupees
-          campaign_name: 'CODEPULSE_FYND_AD_CAMPAIGN',
+          campaign_name: "CODEPULSE_FYND_AD_CAMPAIGN",
           website_url: pdpLink,
           targeting: {
             age_min: Number(minAge),
             age_max: Number(maxAge),
-            countries: ['IN']
-          }
-        }
+            countries: ["IN"],
+          },
+        },
       });
 
       if (response.data.success) {
         console.log({ response });
 
-        // setSuccess(true);
-        // moveToNextStep();
+        setSuccessResponse(response?.data);
+        setShowModal(true);
       }
 
       if (response?.data?.success) {
@@ -146,27 +143,27 @@ const PublishPost = ({
     switch (name) {
       case "ctaTitle":
         setCtaTitle(value);
-        errors = validateFields({
-          ctaTitleLocal: value,
-        });
+        // errors = validateFields({
+        //   ctaTitleLocal: value,
+        // });
         break;
       case "budgetAmount":
         setBudgetAmount(value);
-        errors = validateFields({
-          budgetAmountLocal: value,
-        });
+        // errors = validateFields({
+        //   budgetAmountLocal: value,
+        // });
         break;
       case "minAge":
         setMinAge(value);
-        errors = validateFields({
-          minAgeLocal: value,
-        });
+        // errors = validateFields({
+        //   minAgeLocal: value,
+        // });
         break;
       case "maxAge":
         setMaxAge(value);
-        errors = validateFields({
-          maxAgeLocal: value,
-        });
+        // errors = validateFields({
+        //   maxAgeLocal: value,
+        // });
         break;
       default:
         break;
@@ -235,7 +232,13 @@ const PublishPost = ({
                 <ArrowBackIcon />
               </span>
               <div className="sales-channel-title">
-                Fill the ad campaign details
+                Fill the ad campaign details for
+                <span className="pdp-link">
+                  {progressData?.selectedProduct?.name}
+                  <IconButton onClick={() => window?.open(pdpLink, "_blank")}>
+                    <Launch color="primary" />
+                  </IconButton>
+                </span>
               </div>
             </div>
             <div className="campaign-details-conatainer">
@@ -279,14 +282,17 @@ const PublishPost = ({
                       errors?.budgetAmount || "Minimum budget should be ₹87"
                     }
                   />
-                  <FormHelperText sx={{ color: errors?.budgetAmount ? "red" : "gray" }}>
+                  <FormHelperText
+                    sx={{ color: errors?.budgetAmount ? "red" : "gray" }}
+                  >
                     {errors?.budgetAmount || "Minimum budget should be ₹87"}
                   </FormHelperText>
                 </FormControl>
               </div>
             </div>
+
             <div className="target-audiance-container">
-              <h3>Target Audience</h3>
+              <h3 className="title-target">Target Audience</h3>
 
               <div className="age-conatiner">
                 <TextField
@@ -346,6 +352,12 @@ const PublishPost = ({
           />
         </div>
       </div>
+      <PostPublicSuccessModal
+        showModal={showModal}
+        paramaLink={successResponse?.permalink}
+        adAccountLink={"https://adsmanager.facebook.com/adsmanager"}
+        handleFinalSubmit={handleFinalSubmit}
+      />
     </div>
   );
 };

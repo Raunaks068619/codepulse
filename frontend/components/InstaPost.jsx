@@ -8,7 +8,7 @@ const InstaPost = ({
   profileImageUrl = "https://avatar.iran.liara.run/public/boy?username=Ash",
   imageUrl = "https://avatar.iran.liara.run/public/boy?username=Ash",
   accountName = "Your_Account",
-  location = "Location Here",
+  location = "Sponsored",
   likesCount = 12859,
   caption = "Enhance your Instagram with our UI Mockup ",
   hashtag = "#instagram #templates #beautiful",

@@ -120,6 +120,21 @@ function App() {
     moveToNextStep();
   };
 
+  const handleFinalSubmit = async () => {
+    setProgressData({
+      ...progressData,
+      productDescription: null,
+      productCaption: null,
+      productHashtag: null,
+      ctaTitle: null,
+      budgetAmount: null,
+      minAge: null,
+      maxAge: null,
+      pdpLink: null,
+    });
+    setActiveStep(1);
+  }
+
   const PrepareStepContent = () => {
     switch (activeStep) {
       case 0:
@@ -144,6 +159,7 @@ function App() {
             moveToBackStep={moveToBackStep}
             moveToNextStep={moveToNextStep}
             handleSubmit={handleSubmitAndStoreData}
+            handleFinalSubmit={handleFinalSubmit}
           />
         );
       default:

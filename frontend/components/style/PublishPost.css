@@ -16,3 +16,35 @@
     display: flex;
     gap: 12px;
 }
+
+.pdp-link-container{
+    display: flex;
+    gap: 12px; 
+    align-items: center;    
+}
+
+.pdp-link {
+    border: 1px solid #f3f3f3;
+    border-radius: 4px;
+    padding: 4px 8px; 
+    color: blue;
+    text-transform: capitalize;
+}
+
+.title-target {
+    margin-top: 0;
+}
+
+.action-conatiner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    margin: 0 auto;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.title {
+    text-align: center;
+}
