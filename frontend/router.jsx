@@ -1,11 +1,16 @@
 import { createBrowserRouter } from "react-router-dom";
 import App from "./App";
 import NotFound from "./pages/NotFound";
+import VerifyAuth from "./pages/VerifyAuth";
 
 const router = createBrowserRouter([
   {
     path: "/company/:company_id/",
     element: <App />,
+  },
+  {
+    path: "/company/",
+    element: <VerifyAuth />,
   },
   {
     path: "/company/:company_id/application/:application_id",

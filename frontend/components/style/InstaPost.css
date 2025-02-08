@@ -1,0 +1,88 @@
+.insta-post {
+  width: 400px;
+  /* width: 300px; */
+  border: 1px solid #dbdbdb;
+  border-radius: 10px;
+  background-color: white;
+  margin: 0 auto;
+  font-family: Arial, sans-serif;
+}
+
+.insta-header {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+}
+
+.profile-pic {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.insta-user-info {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.username {
+  font-weight: bold;
+  margin-right: 8px;
+}
+
+.location {
+  color: #8e8e8e;
+  font-size: 12px;
+}
+
+.insta-options {
+  font-size: 20px;
+  cursor: pointer;
+  margin-top: -22px;
+}
+
+.insta-image {
+  width: 100%;
+  height: 300px;
+  /* height: 225px; */
+  background-color: #f0f0f0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-top: 1px solid #dbdbdb;
+  border-bottom: 1px solid #dbdbdb;
+}
+
+.insta-image img {
+  max-width: 100%;
+  max-height: 100%;
+  width: 100%;
+  object-fit: cover;
+}
+
+.insta-actions {
+  display: flex;
+  padding: 10px;
+  font-size: 20px;
+}
+
+.insta-actions span {
+  margin-right: 10px;
+  cursor: pointer;
+}
+
+.insta-likes {
+  padding: 0 10px;
+  font-weight: bold;
+}
+
+.insta-caption {
+  padding: 10px;
+  word-break: break-all;
+}
+
+.hashtags {
+  color: #00376b;
+}

@@ -1,0 +1,94 @@
+.generate-caption-conatiner {
+  width: 100%;
+}
+
+.navigation-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.caption-container {
+  width: 100%;
+  display: flex;
+}
+
+.caption-description-container,
+.instagram-post-preview-container {
+  width: 50%;
+}
+
+.instagram-post-preview-container {
+  transform: scale(0.9);
+  margin-bottom: -40px;
+  margin-top: -20px;
+  margin-left: 120px;
+}
+
+.caption-description-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.back-icon-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #f3f3f3;
+  cursor: pointer;
+  width: fit-content;
+}
+
+.back-icon-container:hover {
+  background-color: #f3f3f3;
+}
+
+.desc-title {
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.caption-description {
+  display: flex;
+  flex-direction: column;
+  margin-top: 12px;
+  margin-bottom: 32px;
+  gap: 12px;
+}
+
+.title-container {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.title-container .sales-channel-title {
+  flex: 1;
+  /* text-align: center; */
+  margin: 0;
+}
+
+.description-value {
+  background-color: #f3f3f3;
+  font-size: 12px;
+}
+
+p {
+  margin: 0 8px !important;
+}
+
+.description-value {
+  max-height: 50px !important;
+  font-size: 12px !important;
+  overflow: auto;
+}
+
+.description-value p {
+  font-size: 12px !important;
+  max-height: 80px !important;
+  overflow: auto;
+}
