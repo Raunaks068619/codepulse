@@ -10,6 +10,10 @@ const codePulseConnection = Knex({
 	useNullAsDefault: true,
 	debug:true,
 	connection: 'postgresql://postgres.vdxqdkaujsuypkcmvzfk:Codepulse_fynd123@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres',
+	pool: {
+        min: 0,
+        max: 7, // Vercel's limit for serverless functions
+    }
 });
 
 module.exports = {
