@@ -52,6 +52,8 @@ const STATIC_PATH = process.env.NODE_ENV === 'production'
     ? path.join(process.cwd(), 'frontend', 'public', 'dist')
     : path.join(process.cwd(), 'frontend');
 
+console.log("STATIC_PATH => ", STATIC_PATH);
+    
 const app = express();
 const platformApiRoutes = fdkExtension.platformApiRoutes;
 

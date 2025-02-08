@@ -42,6 +42,7 @@ const PublishPost = ({
   const [errors, setErrors] = useState({});
   const [successResponse, setSuccessResponse] = useState({});
   const [showModal, setShowModal] = useState(false);
+  const [isSubmitLoading, setIsSubmitLoading] = useState(false);
 
   useEffect(() => {
     // setProductDescription(progressData?.selectedProduct?.description);
@@ -86,6 +87,7 @@ const PublishPost = ({
   };
 
   const storeAndmoveToNextStep = async () => {
+    setIsSubmitLoading(true);
     try {
       const errors = validateFields({
         ctaTitleLocal: ctaTitle,
@@ -134,6 +136,8 @@ const PublishPost = ({
       }
     } catch (err) {
       console.log(err.response?.data?.message || "Failed to publish post");
+    } finally {
+      //  setIsSubmitLoading(false);
     }
   };
 
@@ -331,6 +335,7 @@ const PublishPost = ({
               variant="contained"
               color="primary"
               fullWidth
+              loading={isSubmitLoading}
               disabled={isSubmitDisabled}
               onClick={storeAndmoveToNextStep}
             >

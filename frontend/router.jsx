@@ -17,6 +17,22 @@ const router = createBrowserRouter([
     element: <App />,
   },
   {
+    path: "/",
+    element: <>
+    <div>
+      its working, Please move to another working route.
+    </div>
+    </>,
+  },
+  {
+    path: "/test-page",
+    element: (
+      <>
+        <div>Hurrrey Its wokring</div>
+      </>
+    ),
+  },
+  {
     path: "/*", // Fallback route for all unmatched paths
     element: <NotFound />, // Component to render for unmatched paths
   },
