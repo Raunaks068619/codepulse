@@ -14,6 +14,7 @@ import { Toaster } from "sonner";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import PublishPost from "./components/PublishPost";
+import InstagramAuthForm from "./components/Test";
 
 const defaultTheme = createTheme({
   palette: {
@@ -138,9 +139,10 @@ function App() {
   const PrepareStepContent = () => {
     switch (activeStep) {
       case 0:
-        // return <InstagramAuthForm />
       return <InstaAuthLogin moveToNextStep={moveToNextStep} />;
       case 1:
+
+        // return <InstagramAuthForm />
         return <ProductListing handleSubmit={handleSubmitAndStoreData} />;
       case 2:
         return (

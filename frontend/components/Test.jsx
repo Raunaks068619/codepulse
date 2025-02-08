@@ -1,21 +1,27 @@
-import React, { useState } from 'react';
-import './style/Test.css';
+import React, { useState } from "react";
+import "./style/Test.css";
+import CustomInput from "./CustomInput";
+import { ContentCopy, Key, Person } from "@mui/icons-material";
+import CustomButton from "./CustomButton";
+import { useParams } from "react-router-dom";
+import { toast } from "sonner";
+import axios from "axios";
+
+const EXAMPLE_MAIN_URL = window.location.origin;
 
 const InstagramAuthForm = () => {
-  const [clientId, setClientId] = useState('');
-  const [clientSecret, setClientSecret] = useState('');
-  
-  const redirectUrl = "Https://Copied-Meetup-Maiden-Qualify.Trycloudflare.Com/Company";
-  
-  const handleCopyUrl = () => {
-    navigator.clipboard.writeText(redirectUrl);
-  };
-  
+  const [clientId, setClientId] = useState("");
+  const [clientSecret, setClientSecret] = useState("");
+  const [errors, setErrors] = useState({});
+  const [isSubmiting, setIsSubmiting] = useState(false);
+
+  const { company_id, application_id } = useParams();
+
   const steps = [
     "Create facebook developers account and create an App inside it",
     "Create a Facebook business account with a public page",
     "Create an Instagram business account, link this account to facebook page",
-    "Get the Application ID and Application Secret"
+    "Get the Application ID and Application Secret",
   ];
 
   const importantSteps = [
@@ -23,8 +29,65 @@ const InstagramAuthForm = () => {
     "Go to your account: Facebook Developer Portal",
     'Navigate to the "Facebook Login for Business" section',
     'Paste the copied code into the "Valid OAuth Redirect URIs" text field',
-    'Click on "Save Changes"'
+    'Click on "Save Changes"',
   ];
+
+  const handleConnect = async () => {
+    setIsSubmiting(true);
+    try {
+      console.log("Application ID:", clientId);
+      console.log("Application Secret:", clientSecret);
+
+      const err = validateInput();
+      if (Object.keys(err).length > 0) {
+        setErrors(err);
+        return;
+      }
+
+      setErrors({});
+
+      // Call API to store data in DB
+      const res = await axios.post("/api/auth/login", {
+        company_id,
+        application_id,
+        client_id: clientId || "",
+        client_secret: clientSecret || "",
+      });
+
+      window.parent.location.href = res?.data?.authUrl;
+      // moveToNextStep();
+      // toast("login successful");
+    } catch (err) {
+      console.log(err);
+      toast(err.message || "Opps ! Error while login with meta");
+    } finally {
+      setIsSubmiting(false);
+    }
+  };
+
+  const validateInput = () => {
+    const errors = {};
+    if (!clientId) {
+      errors.clientId = "Client ID is required";
+    }
+
+    if (!clientSecret) {
+      errors.clientSecret = "Client Secret is required";
+    }
+
+    return errors;
+  };
+
+  const rediretcURL = EXAMPLE_MAIN_URL + "/company";
+
+  const handleCopyUrl = async () => {
+    try {
+      await navigator?.clipboard?.writeText(rediretcURL);
+      toast("Copied to clipboard");
+    } catch (err) {
+      console.error("Failed to copy: ", err);
+    }
+  };
 
   return (
     <div className="container">
@@ -32,7 +95,7 @@ const InstagramAuthForm = () => {
         <div className="header">
           <h1>Instagram Authentication</h1>
         </div>
-        
+
         <div className="content">
           <div className="split-layout">
             {/* Left Side - Instructions */}
@@ -51,18 +114,16 @@ const InstagramAuthForm = () => {
               <div className="section">
                 <h3>Important:</h3>
                 <div className="url-box">
-                  <p>{redirectUrl}</p>
-                  <button className="copy-button" onClick={handleCopyUrl}>
-                    Copy
-                  </button>
+                  <p>{rediretcURL}</p>
+                  <ContentCopy className="copy-icon" onClick={handleCopyUrl} />
                 </div>
-                
+
                 <ol className="steps-list">
                   {importantSteps.map((step, index) => (
                     <li key={index}>
                       {step.includes("Facebook Developer Portal") ? (
                         <>
-                          Go to your account:{' '}
+                          Go to your account:{" "}
                           <a href="https://developers.facebook.com">
                             Facebook Developer Portal
                           </a>
@@ -80,29 +141,41 @@ const InstagramAuthForm = () => {
             <div className="right-side">
               <div className="form-container">
                 <div className="form-group">
-                  <label htmlFor="clientId">Client Id</label>
-                  <input
-                    id="clientId"
-                    value={clientId}
-                    onChange={(e) => setClientId(e.target.value)}
+                  <CustomInput
+                    label="Client ID"
                     placeholder="Enter your client ID"
+                    icon={Person}
+                    name="clientId"
+                    onChange={(e) => setClientId(e.target.value)}
+                    value={clientId}
+                    error={errors?.clientId}
+                    helperText={errors?.clientId}
                   />
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="clientSecret">Client Secret</label>
-                  <input
-                    id="clientSecret"
+                  <CustomInput
+                    label="Client Secret"
                     type="password"
+                    placeholder="Enter your client Secret"
+                    icon={Key}
                     value={clientSecret}
+                    name="clientSecret"
                     onChange={(e) => setClientSecret(e.target.value)}
-                    placeholder="Enter your client secret"
+                    error={errors?.clientSecret}
+                    helperText={errors?.clientSecret}
                   />
                 </div>
 
-                <button className="connect-button">
+                <CustomButton
+                  variant="contained"
+                  color="primary"
+                  fullWidth
+                  onClick={handleConnect}
+                  loading={isSubmiting}
+                >
                   Connect to Account
-                </button>
+                </CustomButton>
               </div>
             </div>
           </div>
