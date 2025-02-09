@@ -338,6 +338,6 @@
 }
 
 .product-images .product-image-select.selected {  
-  box-shadow: 5px 5px 5px 0 #0000001a;
+  border: 1px solid #1877F2;
   cursor: pointer;
 }
