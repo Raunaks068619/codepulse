@@ -29,6 +29,13 @@ const fdkExtension = setupFdk({
             else
                 return `${req.extension.base_url}/company/${req.query['company_id']}`;
         },
+        install: async (req) => {
+            // Write you code here to return initial launch url after auth process complete
+            if (req.query.application_id)
+                return `${req.extension.base_url}/company/${req.query['company_id']}/application/${req.query.application_id}`;
+            else
+                return `${req.extension.base_url}/company/${req.query['company_id']}`;
+        },
 
         uninstall: async (req) => {
             // Write your code here to cleanup data related to extension
