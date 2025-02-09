@@ -1,7 +1,8 @@
- import { defineConfig } from "vite";
+import { defineConfig } from "vite";
 import { dirname } from "path";
 import { fileURLToPath } from "url";
 import react from "@vitejs/plugin-react";
+import path from 'path'
 
 const proxyOptions = {
   target: `http://127.0.0.1:${process.env.BACKEND_PORT}`,
@@ -40,7 +41,7 @@ export default defineConfig({
     preserveSymlinks: true,
   },
   build: {
-    outDir: 'public/dist'
+    outDir: path.resolve(__dirname, 'public/dist'),
   },
   server: {
     host: "localhost",
@@ -50,7 +51,7 @@ export default defineConfig({
       "^/api(/|(\\?.*)?$)": proxyOptions,
       "^/callback(/|(\\?.*)?$)": proxyOptions,
       "^/fp(/|(\\?.*)?$)": proxyOptions,
-     "^/adm(/|(\\?.*)?$)": proxyOptions,
+      "^/adm(/|(\\?.*)?$)": proxyOptions,
     },
   },
 });

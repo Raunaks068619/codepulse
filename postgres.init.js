@@ -10,10 +10,6 @@ const codePulseConnection = Knex({
 	useNullAsDefault: true,
 	debug:true,
 	connection: process.env.DATABASE_URL,
-	pool: {
-        min: 0,
-        max: 7, // Vercel's limit for serverless functions
-    }
 });
 
 module.exports = {

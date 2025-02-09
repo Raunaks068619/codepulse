@@ -664,6 +664,14 @@ platformApiRoutes.use('/products', productRouter);
 // remember to also add a proxy rule for them in /frontend/vite.config.js
 app.use('/api', platformApiRoutes);
 
+const healthRouter = express.Router();
+healthRouter.get('/', (req, res, next) => {
+    res.json({
+        "ok": "ok"
+    });
+});
+app.use("/", healthRouter);
+
 // Serve the React app for all other routes
 app.get('*', (req, res) => {
     return res
