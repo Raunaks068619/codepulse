@@ -7,7 +7,7 @@
     "start:dev": "nodemon index.js",
     "build": "react-scripts build",
     "start:prod": "NODE_ENV=production node index.js",
-    "postinstall": "npm run migrate",
+    "postinstall": "cd frontend && npm install && npm run build && cd ..",
     "create-migration": "knex --knexfile ./db/knexfile.js migrate:make",
     "migrate": "knex --knexfile ./db/knexfile.js migrate:latest",
     "rollback": "knex --knexfile ./db/knexfile.js migrate:rollback",

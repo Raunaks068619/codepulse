@@ -2,16 +2,16 @@ const express = require('express');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const path = require("path");
-const sqlite3 = require('sqlite3').verbose();
+// const sqlite3 = require('sqlite3').verbose();
 const serveStatic = require("serve-static");
 const { readFileSync } = require('fs');
 const { setupFdk } = require("@gofynd/fdk-extension-javascript/express");
-const { SQLiteStorage } = require("@gofynd/fdk-extension-javascript/express/storage");
+// const { SQLiteStorage } = require("@gofynd/fdk-extension-javascript/express/storage");
 const axios = require('axios');
 const SecretsModel = require('./models/secrets.model');
 const AdvertiseModel = require('./models/advertise.model');
 const { isEmpty } = require('lodash');
-const sqliteInstance = new sqlite3.Database('session_storage.db');
+// const sqliteInstance = new sqlite3.Database('session_storage.db');
 const productRouter = express.Router();
 
 console.log("first", process.env.EXTENSION_BASE_URL)
@@ -35,7 +35,7 @@ const fdkExtension = setupFdk({
             // If task is time taking then process it async on other process.
         }
     },
-    storage: new SQLiteStorage(sqliteInstance, "exapmple-fynd-platform-extension"), // add your prefix
+    // storage: new SQLiteStorage(sqliteInstance, "exapmple-fynd-platform-extension"), // add your prefix
     access_mode: "online",
     webhook_config: {
         api_path: "/api/webhook-events",
