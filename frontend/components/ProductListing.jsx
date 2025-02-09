@@ -17,7 +17,6 @@ import {
   TextField,
 } from "@mui/material";
 import urlJoin from "url-join";
-import ProductCard from "./ProductCard";
 
 const EXAMPLE_MAIN_URL = window.location.origin;
 
@@ -140,7 +139,54 @@ const ProductListing = ({ handleSubmit = () => {} }) => {
           ) : (
             <div className="card-container">
               {filteredProducts?.map((product, productIndex) => (
-                <ProductCard product={product} toggleModal={toggleModal}/>
+                <div
+                  key={`product-${product.name}-${productIndex}`}
+                  className="card"
+                  onClick={() => toggleModal(product)}
+                >
+                  <div className="channel-details-container">
+                    <img
+                      className="logo"
+                      src={productProfileImage(product.media)}
+                      alt={product.name}
+                    />
+                    <div className="details-container">
+                      <p className="name">{product?.name}</p>
+                      <img
+                        className="mr-r-12"
+                        src={product.is_active ? greenDot : grayDot}
+                        alt="status"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex-column">
+                    {product.brand && (
+                      <div
+                        className="product-brand-name"
+                        data-testid={`product-brand-name-${product.id}`}
+                      >
+                        Brand: {product.brand.name}
+                      </div>
+                    )}
+                    {product.category_slug && (
+                      <div
+                        className="product-category"
+                        data-testid={`product-category-slug-${product.id}`}
+                      >
+                        Category: <span>{product.category_slug}</span>
+                      </div>
+                    )}
+                    {product?.price?.selling && (
+                      <div
+                        className="product-price"
+                        data-testid={`product-price-slug-${product.id}`}
+                      >
+                        Price: <span>{product?.price?.selling?.currency_symbol} {product?.price?.selling?.max}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
               ))}
             </div>
           )}
