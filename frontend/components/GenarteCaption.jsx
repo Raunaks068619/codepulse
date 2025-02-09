@@ -17,7 +17,7 @@ const GenerateCaption = ({
 
   const [productDescription, setProductDescription] = useState("");
   const [productCaption, setProductCaption] = useState("");
-  const [productHashtag, setProductHashtag] = useState([randomHashtag?.title]);
+  const [productHashtag, setProductHashtag] = useState([]);
 
 
   console.log({ progressData });
@@ -35,12 +35,15 @@ const GenerateCaption = ({
     });
   };
 
+  function ensureHashPrefix(arr) {
+    return (arr || []).map(str => str.startsWith('#') ? str : `#${str}`);
+  }
 
   const getCaption = async () => {
     try {
       const response = await axios.post('/api/generate-captions', { description: productDescription });
       setProductCaption(response.data.caption)
-      setProductHashtag(JSON.parse(response.data.hashtags));
+      setProductHashtag(ensureHashPrefix(JSON.parse(response.data.hashtags)));
 
     } catch (error) {
       console.error('Error fetching caption:', error);
@@ -52,12 +55,14 @@ const GenerateCaption = ({
       setProductCaption(progressData?.productCaption)
     }
     if (progressData?.productHashtag) {
-      setProductHashtag(progressData?.productHashtag);
+      setProductHashtag(ensureHashPrefix(progressData?.productHashtag));
     }
     else {
       getCaption();
     }
   }, [productDescription])
+
+
 
   return (
     <div className="generate-caption-conatiner">
@@ -128,7 +133,8 @@ const GenerateCaption = ({
                     console.log({
                       newValues,
                     });
-                    setProductHashtag(newValues);
+                    const updatedTags = ensureHashPrefix(newValues);
+                    setProductHashtag(updatedTags);
                   }}
                   renderTags={(value, getTagProps) =>
                     value.map((option, index) => {

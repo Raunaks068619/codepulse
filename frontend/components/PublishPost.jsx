@@ -10,6 +10,13 @@ import {
   FormHelperText,
   IconButton,
   Typography,
+  Slider,
+  Divider,
+  Box,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 import InstaPost from "./InstaPost";
 import "./style/GenerateCaption.css";
@@ -20,7 +27,7 @@ import { useEffect, useState } from "react";
 import "./style/PublishPost.css";
 import { CTAtitles } from "../constants";
 import urlJoin from "url-join";
-import { Launch } from "@mui/icons-material";
+import { Error, Launch, Money } from "@mui/icons-material";
 import { PostPublicSuccessModal } from "./PostPublicSuccessModal";
 
 const EXAMPLE_MAIN_URL = window.location.origin;
@@ -28,14 +35,16 @@ const EXAMPLE_MAIN_URL = window.location.origin;
 const PublishPost = ({
   authData,
   progressData,
-  handleSubmit = () => {},
-  moveToNextStep = () => {},
-  moveToBackStep = () => {},
-  handleFinalSubmit = () => {}
+  handleSubmit = () => { },
+  moveToNextStep = () => { },
+  moveToBackStep = () => { },
+  handleFinalSubmit = () => { }
 }) => {
   const { company_id, application_id } = useParams();
-  const [ctaTitle, setCtaTitle] = useState("");
-  const [budgetAmount, setBudgetAmount] = useState();
+  const [ctaTitle, setCtaTitle] = useState("SHOP_NOW");
+  const [budgetAmount, setBudgetAmount] = useState(88);
+  // const [range, setRange] = useState([0, 100]);
+  const [reachEstimates, setReachEstimates] = useState({});
   const [minAge, setMinAge] = useState("");
   const [maxAge, setMaxAge] = useState("");
   const [pdpLink, setPdpLink] = useState("");
@@ -43,8 +52,17 @@ const PublishPost = ({
   const [successResponse, setSuccessResponse] = useState({});
   const [showModal, setShowModal] = useState(false);
   const [isSubmitLoading, setIsSubmitLoading] = useState(false);
+  const [openErrorDialog, setOpenErrorDialog] = useState(false);
+  const [errorDetails, setErrorDetails] = useState(null);
+
+  const handleCloseErrorDialog = () => {
+    setOpenErrorDialog(false);
+    setErrorDetails(null);
+  };
 
   useEffect(() => {
+    console.log(progressData);
+
     // setProductDescription(progressData?.selectedProduct?.description);
     if (progressData?.selectedProduct?.slug) {
       fetchPDPLink();
@@ -66,7 +84,6 @@ const PublishPost = ({
       setMaxAge(progressData?.maxAge);
     }
   }, [progressData]);
-
   const fetchPDPLink = async () => {
     try {
       const { data } = await axios.get(
@@ -110,6 +127,7 @@ const PublishPost = ({
           progressData?.productHashtag?.join(" "),
         company_id,
         application_id,
+        productId: progressData.selectedProduct.id,
         createAd: true,
         adConfig: {
           cta_type: ctaTitle,
@@ -129,15 +147,20 @@ const PublishPost = ({
 
         setSuccessResponse(response?.data);
         setShowModal(true);
+        setIsSubmitLoading(false);
       }
 
       if (response?.data?.success) {
         console.log({ response });
       }
     } catch (err) {
-      console.log(err.response?.data?.message || "Failed to publish post");
+      if (err.response?.status === 402) {
+        setErrorDetails(err.response.data.error);
+        setOpenErrorDialog(true);
+        setIsSubmitLoading(false);
+      }
     } finally {
-      //  setIsSubmitLoading(false);
+      setIsSubmitLoading(false);
     }
   };
 
@@ -153,9 +176,9 @@ const PublishPost = ({
         break;
       case "budgetAmount":
         setBudgetAmount(value);
-        // errors = validateFields({
-        //   budgetAmountLocal: value,
-        // });
+        errors = validateFields({
+          budgetAmountLocal: value,
+        });
         break;
       case "minAge":
         setMinAge(value);
@@ -187,13 +210,11 @@ const PublishPost = ({
       error.ctaTitle = "Cat Title is required";
     }
 
-    if (!budgetAmountLocal || budgetAmountLocal < 87) {
+    if (!budgetAmountLocal || budgetAmountLocal <= 87) {
       error.budgetAmount = "budget should be greater then ₹87";
     }
 
-    if (!minAgeLocal) {
-      error.minAge = "Min age is required.";
-    } else if (minAgeLocal < 18) {
+    if (minAgeLocal < 18) {
       error.minAge = "Min age should be geater then 18";
     }
 
@@ -205,6 +226,54 @@ const PublishPost = ({
 
     return error;
   };
+
+  const estimateInstaReach = (budget) => {
+    const baseBudget = 88; // Given base budget
+    const minReach = 560;  // Minimum reach for base budget
+    const maxReach = 820;  // Maximum reach for base budget
+
+    const minCPM = baseBudget / maxReach; // Cost per 1 reach for max reach scenario
+    const maxCPM = baseBudget / minReach; // Cost per 1 reach for min reach scenario
+
+    const estimatedMinReach = Math.floor(budget / maxCPM);
+    const estimatedMaxReach = Math.floor(budget / minCPM);
+
+    console.log({
+      minReach: estimatedMinReach,
+      maxReach: estimatedMaxReach
+    });
+
+    setReachEstimates({
+      min: estimatedMinReach * (budgetAmount > 100 ? 2 : 1),
+      max: estimatedMaxReach * (budgetAmount > 100 ? 2 : 1),
+    })
+
+    return {
+      minReach: estimatedMinReach,
+      maxReach: estimatedMaxReach
+    };
+  }
+
+  useEffect(() => {
+    estimateInstaReach(budgetAmount)
+  }, [])
+
+  const estimateBudgetForRange = (minReach = 460, maxReach = 970) => {
+    const baseBudget = 88; // Given base budget
+    const minReachBase = 260; // Minimum reach for base budget
+    const maxReachBase = 620; // Maximum reach for base budget
+
+    const minCPM = baseBudget / maxReachBase; // Cost per 1 reach for max reach scenario
+    const maxCPM = baseBudget / minReachBase; // Cost per 1 reach for min reach scenario
+
+    const budgetForMinReach = minReach * minCPM;
+    const budgetForMaxReach = maxReach * maxCPM;
+    console.log(Math.ceil((budgetForMinReach + budgetForMaxReach) / 2));
+
+
+    return Math.ceil((budgetForMinReach + budgetForMaxReach) / 2); // Return single estimated budget
+  }
+
 
   const isSubmitDisabled =
     Object.keys(
@@ -280,7 +349,10 @@ const PublishPost = ({
                     }
                     label="Amount"
                     value={budgetAmount}
-                    onChange={(e) => handleOnChange(e, "budgetAmount")}
+                    onChange={(e) => {
+                      handleOnChange(e, "budgetAmount")
+                      estimateInstaReach(e.target.value)
+                    }}
                     error={!!errors?.budgetAmount}
                     helperText={
                       errors?.budgetAmount || "Minimum budget should be ₹87"
@@ -293,6 +365,22 @@ const PublishPost = ({
                   </FormHelperText>
                 </FormControl>
               </div>
+              {/* <Slider
+                value={range}
+                onChange={(_, newValue) => {
+                  setRange(newValue)
+                  estimateBudgetForRange(newValue[0], newValue[1])
+                }
+                }
+                valueLabelDisplay="auto"
+                min={reachEstimates.min}
+                max={reachEstimates.max}
+                marks={[
+                  { value: reachEstimates.min, label: reachEstimates.min },
+                  { value: reachEstimates.max, label: reachEstimates.max }
+                ]}
+                disableSwap
+              /> */}
             </div>
 
             <div className="target-audiance-container">
@@ -303,6 +391,7 @@ const PublishPost = ({
                   id="min-age"
                   label="Min Age"
                   type="number"
+                  fullWidth
                   slotProps={{
                     inputLabel: {
                       shrink: true,
@@ -322,6 +411,7 @@ const PublishPost = ({
                       shrink: true,
                     },
                   }}
+                  fullWidth
                   value={maxAge}
                   onChange={(e) => handleOnChange(e, "maxAge")}
                   error={!!errors?.maxAge}
@@ -330,6 +420,40 @@ const PublishPost = ({
               </div>
             </div>
           </div>
+
+          {budgetAmount &&
+            <div style={{ borderTop: "1px solid #ddd", paddingTop: "12px" }}>
+              <Box sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}>
+                <Typography
+                  variant="subtitle2"
+                >
+                  Ad budget :
+                </Typography>
+                <Typography variant="subtitle2" >
+                  ₹{budgetAmount} over 1 day
+                </Typography>
+              </Box>
+
+              <Box sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}>
+                <Typography
+                  variant="subtitle2"
+                  sx={{ color: 'grey.500' }}
+                >
+                  Estimated reach :
+                </Typography>
+                <Typography variant="subtitle2" sx={{ color: 'grey.500' }}>
+                  {reachEstimates.min} - {reachEstimates.max}
+                </Typography>
+              </Box>
+            </div>}
           <div className="submit-container">
             <Button
               variant="contained"
@@ -363,6 +487,28 @@ const PublishPost = ({
         adAccountLink={"https://adsmanager.facebook.com/adsmanager"}
         handleFinalSubmit={handleFinalSubmit}
       />
+      <Dialog
+        open={openErrorDialog}
+        // onClose={handleCloseErrorDialog}
+        disableEscapeKeyDown
+        aria-labelledby="error-dialog-title"
+        aria-describedby="error-dialog-description"
+      >
+        <DialogTitle sx={{ display: "flex", alignItems: 'center', gap: "8px" }} id="error-dialog-title">
+          <Error color="warning" />
+          {errorDetails?.error_user_title || "Budget Error"}
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body1" id="error-dialog-description">
+            {errorDetails?.error_user_msg}
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button variant="contained" onClick={handleCloseErrorDialog} color="primary" autoFocus>
+            OK
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };

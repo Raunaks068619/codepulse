@@ -19,10 +19,10 @@ import InstagramAuthForm from "./components/Test";
 const defaultTheme = createTheme({
   palette: {
     primary: {
-      main: "#1877F2", // Facebook blue
+      main: "#2e31be", // Facebook blue
     },
     secondary: {
-      main: "#E4405F", // Instagram pink
+      main: "#2e31be", // Instagram pink
     },
   },
   typography: {

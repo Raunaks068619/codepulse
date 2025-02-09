@@ -9,6 +9,7 @@ const { setupFdk } = require("@gofynd/fdk-extension-javascript/express");
 const { SQLiteStorage } = require("@gofynd/fdk-extension-javascript/express/storage");
 const axios = require('axios');
 const SecretsModel = require('./models/secrets.model');
+const AdvertiseModel = require('./models/advertise.model');
 const { isEmpty } = require('lodash');
 const sqliteInstance = new sqlite3.Database('session_storage.db');
 const productRouter = express.Router();
@@ -326,6 +327,7 @@ app.post('/api/instagram/post', async (req, res) => {
             company_id,
             application_id,
             createAd = false,
+            productId,
             adConfig
             // = {
             //     cta_type: 'SHOP_NOW',
@@ -354,7 +356,7 @@ app.post('/api/instagram/post', async (req, res) => {
             applicationId: application_id
         });
 
-        const { accessToken, instagramBusinessId, adAccountId } = secrets;
+        const { accessToken, instagramBusinessId, adAccountId, id: secretsId } = secrets;
 
         // Create media container
         const containerResponse = await axios.post(
@@ -543,6 +545,24 @@ app.post('/api/instagram/post', async (req, res) => {
 
                 console.log("adResponse", adResponse?.data);
 
+                const createAdvertise = await AdvertiseModel.create({
+                    secretsId: secretsId,
+                    productId,
+                    ctaType: adConfig.cta_type,
+                    budget: adConfig.daily_budget,
+                    minAge: adConfig.targeting.age_min,
+                    maxAge: adConfig.targeting.age_max,
+                    campaignName: adConfig.campaign_name,
+                    websiteUrl: adConfig.website_url,
+                    postId,
+                    campaignId,
+                    adsetId: adSetId,
+                    adCreativeId: creativeId,
+                    permaLink: mediaResponse.data.permalink,
+                    adId: adResponse?.data?.id,
+                })
+                console.log("Added in Advertise db", { createAdvertise });
+
 
                 return res.status(200).json({
                     success: true,
@@ -553,11 +573,16 @@ app.post('/api/instagram/post', async (req, res) => {
                         campaign_id: campaignId,
                         ad_set_id: adSetId,
                         creative_id: creativeId,
-                        ad_id: adResponse?.data
+                        ad_id: adResponse?.data?.id
                     } : null
                 });
             } catch (adError) {
                 console.error('Ad creation failed:', adError.response?.data || adError);
+                return res.status(402).json({
+                    success: false,
+                    message: 'Operation failed',
+                    error: adError.response?.data.error
+                });
             }
         }
 

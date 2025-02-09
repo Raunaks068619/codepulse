@@ -93,7 +93,7 @@ const InstaAuthLogin = () => {
     <div className="container">
       <div className="card">
         <div className="header">
-          <h1>Instagram Authentication</h1>
+          <h1>Attach Instagram Account</h1>
         </div>
 
         <div className="content">
