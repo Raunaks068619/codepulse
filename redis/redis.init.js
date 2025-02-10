@@ -1,5 +1,4 @@
 const Redis = require('ioredis');
-const config = require('../config');
 
 function connect(name, uri) {
   const db = new Redis(uri, {
