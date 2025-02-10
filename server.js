@@ -6,7 +6,8 @@ const path = require("path");
 const serveStatic = require("serve-static");
 const { readFileSync } = require('fs');
 const { setupFdk } = require("@gofynd/fdk-extension-javascript/express");
-const { MemoryStorage } = require("@gofynd/fdk-extension-javascript/express/storage");
+const { RedisStorage } = require("@gofynd/fdk-extension-javascript/express/storage");
+const { redisClient } = require("./redis/redis.init");
 const axios = require('axios');
 const SecretsModel = require('./models/secrets.model');
 const AdvertiseModel = require('./models/advertise.model');
@@ -42,7 +43,7 @@ const fdkExtension = setupFdk({
             // If task is time taking then process it async on other process.
         }
     },
-    storage: new MemoryStorage("Raunak"), // add your prefix
+    storage: new RedisStorage(redisClient, 'codepulse'), // add your prefix
     access_mode: "online",
     webhook_config: {
         api_path: "/api/webhook-events",
