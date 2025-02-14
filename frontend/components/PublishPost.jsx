@@ -17,6 +17,8 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Modal,
+  CircularProgress,
 } from "@mui/material";
 import InstaPost from "./InstaPost";
 import "./style/GenerateCaption.css";
@@ -35,10 +37,10 @@ const EXAMPLE_MAIN_URL = window.location.origin;
 const PublishPost = ({
   authData,
   progressData,
-  handleSubmit = () => { },
-  moveToNextStep = () => { },
-  moveToBackStep = () => { },
-  handleFinalSubmit = () => { }
+  handleSubmit = () => {},
+  moveToNextStep = () => {},
+  moveToBackStep = () => {},
+  handleFinalSubmit = () => {},
 }) => {
   const { company_id, application_id } = useParams();
   const [ctaTitle, setCtaTitle] = useState("SHOP_NOW");
@@ -229,8 +231,8 @@ const PublishPost = ({
 
   const estimateInstaReach = (budget) => {
     const baseBudget = 88; // Given base budget
-    const minReach = 560;  // Minimum reach for base budget
-    const maxReach = 820;  // Maximum reach for base budget
+    const minReach = 560; // Minimum reach for base budget
+    const maxReach = 820; // Maximum reach for base budget
 
     const minCPM = baseBudget / maxReach; // Cost per 1 reach for max reach scenario
     const maxCPM = baseBudget / minReach; // Cost per 1 reach for min reach scenario
@@ -240,23 +242,23 @@ const PublishPost = ({
 
     console.log({
       minReach: estimatedMinReach,
-      maxReach: estimatedMaxReach
+      maxReach: estimatedMaxReach,
     });
 
     setReachEstimates({
       min: estimatedMinReach * (budgetAmount > 100 ? 2 : 1),
       max: estimatedMaxReach * (budgetAmount > 100 ? 2 : 1),
-    })
+    });
 
     return {
       minReach: estimatedMinReach,
-      maxReach: estimatedMaxReach
+      maxReach: estimatedMaxReach,
     };
-  }
+  };
 
   useEffect(() => {
-    estimateInstaReach(budgetAmount)
-  }, [])
+    estimateInstaReach(budgetAmount);
+  }, []);
 
   const estimateBudgetForRange = (minReach = 460, maxReach = 970) => {
     const baseBudget = 88; // Given base budget
@@ -270,10 +272,8 @@ const PublishPost = ({
     const budgetForMaxReach = maxReach * maxCPM;
     console.log(Math.ceil((budgetForMinReach + budgetForMaxReach) / 2));
 
-
     return Math.ceil((budgetForMinReach + budgetForMaxReach) / 2); // Return single estimated budget
-  }
-
+  };
 
   const isSubmitDisabled =
     Object.keys(
@@ -350,8 +350,8 @@ const PublishPost = ({
                     label="Amount"
                     value={budgetAmount}
                     onChange={(e) => {
-                      handleOnChange(e, "budgetAmount")
-                      estimateInstaReach(e.target.value)
+                      handleOnChange(e, "budgetAmount");
+                      estimateInstaReach(e.target.value);
                     }}
                     error={!!errors?.budgetAmount}
                     helperText={
@@ -421,39 +421,37 @@ const PublishPost = ({
             </div>
           </div>
 
-          {budgetAmount &&
+          {budgetAmount && (
             <div style={{ borderTop: "1px solid #ddd", paddingTop: "12px" }}>
-              <Box sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }}>
-                <Typography
-                  variant="subtitle2"
-                >
-                  Ad budget :
-                </Typography>
-                <Typography variant="subtitle2" >
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <Typography variant="subtitle2">Ad budget :</Typography>
+                <Typography variant="subtitle2">
                   ₹{budgetAmount} over 1 day
                 </Typography>
               </Box>
 
-              <Box sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }}>
-                <Typography
-                  variant="subtitle2"
-                  sx={{ color: 'grey.500' }}
-                >
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <Typography variant="subtitle2" sx={{ color: "grey.500" }}>
                   Estimated reach :
                 </Typography>
-                <Typography variant="subtitle2" sx={{ color: 'grey.500' }}>
+                <Typography variant="subtitle2" sx={{ color: "grey.500" }}>
                   {reachEstimates.min} - {reachEstimates.max}
                 </Typography>
               </Box>
-            </div>}
+            </div>
+          )}
           <div className="submit-container">
             <Button
               variant="contained"
@@ -494,7 +492,10 @@ const PublishPost = ({
         aria-labelledby="error-dialog-title"
         aria-describedby="error-dialog-description"
       >
-        <DialogTitle sx={{ display: "flex", alignItems: 'center', gap: "8px" }} id="error-dialog-title">
+        <DialogTitle
+          sx={{ display: "flex", alignItems: "center", gap: "8px" }}
+          id="error-dialog-title"
+        >
           <Error color="warning" />
           {errorDetails?.error_user_title || "Budget Error"}
         </DialogTitle>
@@ -504,11 +505,33 @@ const PublishPost = ({
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button variant="contained" onClick={handleCloseErrorDialog} color="primary" autoFocus>
+          <Button
+            variant="contained"
+            onClick={handleCloseErrorDialog}
+            color="primary"
+            autoFocus
+          >
             OK
           </Button>
         </DialogActions>
       </Dialog>
+      <Modal
+        open={isSubmitLoading}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box
+          sx={{
+            display: "flex",
+            height: "100%",
+            width: "100%",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <CircularProgress size={100}/>
+        </Box>
+      </Modal>
     </div>
   );
 };
